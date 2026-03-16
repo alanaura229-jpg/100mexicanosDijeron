@@ -116,6 +116,7 @@
             this.ForeColor = System.Drawing.SystemColors.ControlText;
             this.Name = "SeleccionCategoria";
             this.Text = "Seleccion-Categoria";
+            this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.ResumeLayout(false);
 
         }

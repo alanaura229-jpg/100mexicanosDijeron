@@ -10,3 +10,15 @@ C:\Users\espin\source\repos\alanaura229-jpg\100mexicanosDijeron\100mexicanosDije
 C:\Users\espin\source\repos\alanaura229-jpg\100mexicanosDijeron\100mexicanosDijeron\obj\Debug\100mexicanosDijeron.csproj.CoreCompileInputs.cache
 C:\Users\espin\source\repos\alanaura229-jpg\100mexicanosDijeron\100mexicanosDijeron\obj\Debug\100mexicanosDijeron.exe
 C:\Users\espin\source\repos\alanaura229-jpg\100mexicanosDijeron\100mexicanosDijeron\obj\Debug\100mexicanosDijeron.pdb
+C:\Users\espin\source\repos\100mexicanosDijeron\100mexicanosDijeron\bin\Debug\100mexicanosDijeron.exe
+C:\Users\espin\source\repos\100mexicanosDijeron\100mexicanosDijeron\bin\Debug\100mexicanosDijeron.exe.config
+C:\Users\espin\source\repos\100mexicanosDijeron\100mexicanosDijeron\obj\Debug\100mexicanosDijeron.csproj.AssemblyReference.cache
+C:\Users\espin\source\repos\100mexicanosDijeron\100mexicanosDijeron\obj\Debug\_100mexicanosDijeron.pantallaCat.resources
+C:\Users\espin\source\repos\100mexicanosDijeron\100mexicanosDijeron\obj\Debug\_100mexicanosDijeron.SeleccionCategoria.resources
+C:\Users\espin\source\repos\100mexicanosDijeron\100mexicanosDijeron\obj\Debug\_100mexicanosDijeron.seleccionMusica.resources
+C:\Users\espin\source\repos\100mexicanosDijeron\100mexicanosDijeron\obj\Debug\_100mexicanosDijeron.Properties.Resources.resources
+C:\Users\espin\source\repos\100mexicanosDijeron\100mexicanosDijeron\obj\Debug\100mexicanosDijeron.csproj.GenerateResource.cache
+C:\Users\espin\source\repos\100mexicanosDijeron\100mexicanosDijeron\obj\Debug\100mexicanosDijeron.csproj.CoreCompileInputs.cache
+C:\Users\espin\source\repos\100mexicanosDijeron\100mexicanosDijeron\obj\Debug\100mexicanosDijeron.exe
+C:\Users\espin\source\repos\100mexicanosDijeron\100mexicanosDijeron\obj\Debug\100mexicanosDijeron.pdb
+C:\Users\espin\source\repos\100mexicanosDijeron\100mexicanosDijeron\bin\Debug\100mexicanosDijeron.pdb

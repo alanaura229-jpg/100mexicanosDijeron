@@ -214,6 +214,8 @@
     <Content Include="Resources\Imag\9\b.png" />
     <Content Include="Resources\Imag\9\c.jpg" />
     <Content Include="Resources\Imag\9\d.jpg" />
+    <None Include="Resources\menuPrincipal.jpg" />
+    <None Include="Resources\pantallaMenu.jpg" />
     <Content Include="Resources\trivia.sql" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
