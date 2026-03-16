@@ -19,7 +19,7 @@ namespace _100mexicanosDijeron
 
         private void button1_Click(object sender, EventArgs e)
         {
-            //comentario de prueba
+            //comentario de prueba 2
             SeleccionCategoria pantallaCat = new SeleccionCategoria();
             pantallaCat.Show();
 
