@@ -83,6 +83,36 @@ namespace _100mexicanosDijeron.Properties {
         /// <summary>
         ///   Busca un recurso adaptado de tipo System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap Cine {
+            get {
+                object obj = ResourceManager.GetObject("Cine", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Busca un recurso adaptado de tipo System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Deporte {
+            get {
+                object obj = ResourceManager.GetObject("Deporte", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Busca un recurso adaptado de tipo System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Geografia {
+            get {
+                object obj = ResourceManager.GetObject("Geografia", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Busca un recurso adaptado de tipo System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap musica {
             get {
                 object obj = ResourceManager.GetObject("musica", resourceCulture);
@@ -93,9 +123,9 @@ namespace _100mexicanosDijeron.Properties {
         /// <summary>
         ///   Busca un recurso adaptado de tipo System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap musica1 {
+        internal static System.Drawing.Bitmap pantallaMenu {
             get {
-                object obj = ResourceManager.GetObject("musica1", resourceCulture);
+                object obj = ResourceManager.GetObject("pantallaMenu", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -103,9 +133,9 @@ namespace _100mexicanosDijeron.Properties {
         /// <summary>
         ///   Busca un recurso adaptado de tipo System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap pantallaMenu {
+        internal static System.Drawing.Bitmap VideoJuego {
             get {
-                object obj = ResourceManager.GetObject("pantallaMenu", resourceCulture);
+                object obj = ResourceManager.GetObject("VideoJuego", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

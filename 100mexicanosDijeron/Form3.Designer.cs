@@ -1,6 +1,6 @@
 ﻿namespace _100mexicanosDijeron
 {
-    partial class seleccionMusica
+    partial class FormJuego
     {
         /// <summary>
         /// Required designer variable.
@@ -30,15 +30,16 @@
         {
             this.SuspendLayout();
             // 
-            // seleccionMusica
+            // FormJuego
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackgroundImage = global::_100mexicanosDijeron.Properties.Resources.musica1;
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.ClientSize = new System.Drawing.Size(800, 450);
-            this.Name = "seleccionMusica";
-            this.Text = "Ctegoría: Música";
+            this.Name = "FormJuego";
+            this.Text = "Juego";
+            this.Load += new System.EventHandler(this.seleccionMusica_Load);
+            this.Paint += new System.Windows.Forms.PaintEventHandler(this.FormJuego_Paint);
             this.ResumeLayout(false);
 
         }

@@ -22,16 +22,6 @@ namespace _100mexicanosDijeron
             this.WindowState = FormWindowState.Maximized;
         }
 
-
-        private void btnMusica_Click(object sender, EventArgs e)
-        {
-            seleccionMusica seleccionCategoria = new seleccionMusica();
-            seleccionCategoria.Show();
-
-            this.Hide();
-        }
-
-
         private void SeleccionCategoria_Paint(object sender, PaintEventArgs e)
         {
             Graphics g = e.Graphics;
@@ -73,13 +63,15 @@ namespace _100mexicanosDijeron
 
         private void SeleccionCategoria_MouseClick(object sender, MouseEventArgs e)
         {
-            // Revisamos cuál de los 5 rectángulos recibió el clic
+            // Cambiamos areasBotones por botonesCategorias
             foreach (var boton in botonesCategorias)
             {
                 if (boton.Key.Contains(e.Location))
                 {
-                    string categoriaElegida = boton.Value;
-                    MessageBox.Show("Elegiste: " + categoriaElegida);
+                    string eleccion = boton.Value;
+                    FormJuego pantallaPreguntas = new FormJuego(eleccion);
+                    pantallaPreguntas.Show();
+                    this.Hide();
                     break;
                 }
             }
