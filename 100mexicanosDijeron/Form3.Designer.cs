@@ -32,14 +32,17 @@
             // 
             // FormJuego
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.ClientSize = new System.Drawing.Size(600, 366);
+            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.Name = "FormJuego";
             this.Text = "Juego";
             this.Load += new System.EventHandler(this.seleccionMusica_Load);
             this.Paint += new System.Windows.Forms.PaintEventHandler(this.FormJuego_Paint);
+            this.MouseClick += new System.Windows.Forms.MouseEventHandler(this.FormJuego_MouseClick);
+            this.Resize += new System.EventHandler(this.FormJuego_Resize);
             this.ResumeLayout(false);
 
         }
