@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Windows.Forms;
 using MySql.Data.MySqlClient;
 
 namespace _100mexicanosDijeron
 {
-    
     public partial class FormJuego : Form
     {
-        
         string cadenaConexion = "Server=127.0.0.1;Database=juego_trivia;Uid=root;Pwd=root;";
+
         private string categoriaSeleccionada;
         private Image imagenFondo;
 
@@ -19,9 +19,7 @@ namespace _100mexicanosDijeron
         private int aciertos = 0;
         private int errores = 0;
 
-        private string textoPregunta = "Cargando...";
-        private string[] textosOpciones = new string[4];
-        private string respuestaCorrecta = "";
+        private PreguntaTrivia pActual;
         private Dictionary<Rectangle, string> areasOpciones = new Dictionary<Rectangle, string>();
 
         public FormJuego(String categoria)
@@ -57,7 +55,7 @@ namespace _100mexicanosDijeron
                 try
                 {
                     conexion.Open();
-                    string query = $"SELECT pregunta, opcion_a, opcion_b, opcion_c, opcion_d, respuesta_correcta FROM preguntas WHERE categoria_id = {idCategoria} AND tipo = 'opcion_multiple' ORDER BY RAND()";
+                    string query = $"SELECT tipo, pregunta, opcion_a, opcion_b, opcion_c, opcion_d, respuesta_correcta FROM preguntas WHERE categoria_id = {idCategoria} ORDER BY RAND()";
 
                     MySqlCommand comando = new MySqlCommand(query, conexion);
                     MySqlDataReader reader = comando.ExecuteReader();
@@ -65,14 +63,23 @@ namespace _100mexicanosDijeron
                     while (reader.Read())
                     {
                         PreguntaTrivia nuevaPregunta = new PreguntaTrivia();
+                        nuevaPregunta.Tipo = reader["tipo"].ToString();
                         nuevaPregunta.Texto = reader["pregunta"].ToString();
-                        nuevaPregunta.Opciones = new string[] {
-                            "A) " + reader["opcion_a"].ToString(),
-                            "B) " + reader["opcion_b"].ToString(),
-                            "C) " + reader["opcion_c"].ToString(),
-                            "D) " + reader["opcion_d"].ToString()
-                        };
                         nuevaPregunta.Correcta = reader["respuesta_correcta"].ToString();
+
+                        string opA = reader["opcion_a"].ToString();
+                        string opB = reader["opcion_b"].ToString();
+                        string opC = reader["opcion_c"].ToString();
+                        string opD = reader["opcion_d"].ToString();
+
+                        if (nuevaPregunta.Tipo == "opcion_multiple")
+                        {
+                            nuevaPregunta.Opciones = new string[] { "A) " + opA, "B) " + opB, "C) " + opC, "D) " + opD };
+                        }
+                        else
+                        {
+                            nuevaPregunta.Opciones = new string[] { opA, opB, opC, opD };
+                        }
 
                         mazoPreguntas.Add(nuevaPregunta);
                     }
@@ -90,22 +97,20 @@ namespace _100mexicanosDijeron
         {
             if (indicePreguntaActual < mazoPreguntas.Count)
             {
-                PreguntaTrivia pActual = mazoPreguntas[indicePreguntaActual];
-                textoPregunta = pActual.Texto;
-                textosOpciones = pActual.Opciones;
-                respuestaCorrecta = pActual.Correcta;
-
+                pActual = mazoPreguntas[indicePreguntaActual];
                 this.Invalidate();
             }
             else
             {
-                MessageBox.Show($"¡Fin de la categoría {categoriaSeleccionada}!\n\nAciertos: {aciertos}\nErrores: {errores}", "Resultados Finales");
+                MessageBox.Show($"¡Fin de la categoría {categoriaSeleccionada}!\n\nAciertos: {aciertos}\nErrores: {errores}\n\n¡Has completado las {mazoPreguntas.Count} preguntas!", "Resultados Finales");
                 this.Close();
             }
         }
 
         private void FormJuego_Paint(object sender, PaintEventArgs e)
         {
+            if (pActual == null) return;
+
             Graphics g = e.Graphics;
             g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
 
@@ -119,33 +124,88 @@ namespace _100mexicanosDijeron
             g.DrawString($"Categoría: {categoriaSeleccionada}  |  Pregunta {indicePreguntaActual + 1} de {mazoPreguntas.Count}", fuenteTitulo, Brushes.LightGray, 50, 30);
 
             Font fuentePregunta = new Font("Showcard Gothic", 25, FontStyle.Bold);
-            SizeF tamPregunta = g.MeasureString(textoPregunta, fuentePregunta, this.ClientSize.Width - 100);
+            SizeF tamPregunta = g.MeasureString(pActual.Texto, fuentePregunta, this.ClientSize.Width - 100);
             RectangleF rectPregunta = new RectangleF(50, 100, this.ClientSize.Width - 100, tamPregunta.Height);
-            g.DrawString(textoPregunta, fuentePregunta, Brushes.White, rectPregunta);
+            g.DrawString(pActual.Texto, fuentePregunta, Brushes.White, rectPregunta);
 
             areasOpciones.Clear();
-            int anchoBoton = 600;
-            int altoBoton = 60;
-            int separacion = 30;
-            int xInicio = (this.ClientSize.Width / 2) - (anchoBoton / 2);
-            int yInicio = (int)(rectPregunta.Bottom + 50);
-
             Font fuenteOpciones = new Font("Arial", 18, FontStyle.Bold);
             string[] letrasIncisos = { "a", "b", "c", "d" };
 
-            for (int i = 0; i < 4; i++)
+            if (pActual.Tipo == "imagen")
             {
-                if (textosOpciones[i] == null) continue;
+                int anchoBoton = 320;
+                int altoBoton = 220;
+                int separacionX = 80;
+                int separacionY = 40;
 
-                Rectangle rect = new Rectangle(xInicio, yInicio + (i * (altoBoton + separacion)), anchoBoton, altoBoton);
-                areasOpciones.Add(rect, letrasIncisos[i]);
+                int anchoTotal = (anchoBoton * 2) + separacionX;
+                int xInicio = (this.ClientSize.Width / 2) - (anchoTotal / 2);
+                int yInicio = (int)(rectPregunta.Bottom + 30);
 
-                g.FillRectangle(new SolidBrush(Color.FromArgb(180, 0, 0, 0)), rect.X + 5, rect.Y + 5, rect.Width, rect.Height);
-                g.FillRectangle(new SolidBrush(Color.MediumSlateBlue), rect);
-                g.DrawRectangle(new Pen(Color.White, 3), rect);
+                for (int i = 0; i < 4; i++)
+                {
+                    if (pActual.Opciones[i] == null) continue;
 
-                SizeF tamTexto = g.MeasureString(textosOpciones[i], fuenteOpciones);
-                g.DrawString(textosOpciones[i], fuenteOpciones, Brushes.White, rect.X + 20, rect.Y + (rect.Height / 2) - (tamTexto.Height / 2));
+                    int columna = i % 2;
+                    int fila = i / 2;
+
+                    int rectX = xInicio + (columna * (anchoBoton + separacionX));
+                    int rectY = yInicio + (fila * (altoBoton + separacionY));
+
+                    Rectangle rect = new Rectangle(rectX, rectY, anchoBoton, altoBoton);
+                    areasOpciones.Add(rect, letrasIncisos[i]);
+
+                    g.FillRectangle(new SolidBrush(Color.FromArgb(180, 0, 0, 0)), rect.X + 5, rect.Y + 5, rect.Width, rect.Height);
+                    g.FillRectangle(new SolidBrush(Color.MediumSlateBlue), rect);
+                    g.DrawRectangle(new Pen(Color.White, 3), rect);
+
+                    g.DrawString(letrasIncisos[i].ToUpper() + ")", fuenteOpciones, Brushes.White, rect.X, rect.Y - 25);
+
+                    try
+                    {
+                        string rutaOriginal = pActual.Opciones[i];
+                        int indexImag = rutaOriginal.IndexOf("Imag", StringComparison.OrdinalIgnoreCase);
+
+                        if (indexImag != -1)
+                        {
+                            string rutaCorta = rutaOriginal.Substring(indexImag);
+                            string rutaFinal = Path.Combine(Application.StartupPath, @"..\..\Resources", rutaCorta);
+
+                            using (Image imgOpcion = Image.FromFile(rutaFinal))
+                            {
+                                g.DrawImage(imgOpcion, rect.X + 10, rect.Y + 10, rect.Width - 20, rect.Height - 20);
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        g.DrawString("Error cargar imagen", fuenteOpciones, Brushes.Red, rect.X + 20, rect.Y + 40);
+                    }
+                }
+            }
+            else
+            {
+                int anchoBoton = 600;
+                int altoBoton = 60;
+                int separacion = 30;
+                int xInicio = (this.ClientSize.Width / 2) - (anchoBoton / 2);
+                int yInicio = (int)(rectPregunta.Bottom + 50);
+
+                for (int i = 0; i < 4; i++)
+                {
+                    if (pActual.Opciones[i] == null) continue;
+
+                    Rectangle rect = new Rectangle(xInicio, yInicio + (i * (altoBoton + separacion)), anchoBoton, altoBoton);
+                    areasOpciones.Add(rect, letrasIncisos[i]);
+
+                    g.FillRectangle(new SolidBrush(Color.FromArgb(180, 0, 0, 0)), rect.X + 5, rect.Y + 5, rect.Width, rect.Height);
+                    g.FillRectangle(new SolidBrush(Color.MediumSlateBlue), rect);
+                    g.DrawRectangle(new Pen(Color.White, 3), rect);
+
+                    SizeF tamTexto = g.MeasureString(pActual.Opciones[i], fuenteOpciones);
+                    g.DrawString(pActual.Opciones[i], fuenteOpciones, Brushes.White, rect.X + 20, rect.Y + (rect.Height / 2) - (tamTexto.Height / 2));
+                }
             }
         }
 
@@ -159,14 +219,14 @@ namespace _100mexicanosDijeron
                 {
                     string incisoElegido = opcion.Value;
 
-                    if (incisoElegido == respuestaCorrecta)
+                    if (incisoElegido == pActual.Correcta)
                     {
                         MessageBox.Show("¡CORRECTO!");
                         aciertos++;
                     }
                     else
                     {
-                        MessageBox.Show("Incorrecto. La respuesta era el inciso " + respuestaCorrecta.ToUpper());
+                        MessageBox.Show("Incorrecto. La respuesta era el inciso " + pActual.Correcta.ToUpper());
                         errores++;
                     }
 
@@ -187,6 +247,7 @@ namespace _100mexicanosDijeron
 
     public class PreguntaTrivia
     {
+        public string Tipo { get; set; }
         public string Texto { get; set; }
         public string[] Opciones { get; set; }
         public string Correcta { get; set; }
