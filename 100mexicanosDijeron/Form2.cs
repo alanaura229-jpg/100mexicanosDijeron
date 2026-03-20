@@ -14,7 +14,7 @@ namespace _100mexicanosDijeron
     {
 
         Dictionary<Rectangle, string> botonesCategorias = new Dictionary<Rectangle, string>();
-        string[] nombresCategorias = { "Geografía", "Deportes", "Música", "Cine", "Tecnología y video juegos" };
+        string[] nombresCategorias = { "Geografía", "Deportes", "Música", "Cine", "Tecnología y video juegos", "Aleatorio"};
         public SeleccionCategoria()
         {
             InitializeComponent();
@@ -27,19 +27,19 @@ namespace _100mexicanosDijeron
             Graphics g = e.Graphics;
             g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
 
-            // Dibuja fondo
+            // Fondo
             g.DrawImage(Properties.Resources.categoria, 0, 0, this.ClientSize.Width, this.ClientSize.Height);
 
 
             // Dibuja botones
             botonesCategorias.Clear();
             int anchoBoton = 400;
-            int altoBoton = 50;
+            int altoBoton = 40;
             int separacion = 20;
 
             // Calcula el inicio
             int xInicio = (this.ClientSize.Width / 2) - (anchoBoton / 2);
-            int yInicio = 270;
+            int yInicio = 260;
 
             Font fuenteBoton = new Font("Showcard Gothic", 18, FontStyle.Bold);
 
@@ -48,7 +48,7 @@ namespace _100mexicanosDijeron
                 Rectangle rect = new Rectangle(xInicio, yInicio + (i * (altoBoton + separacion)), anchoBoton, altoBoton);
                 botonesCategorias.Add(rect, nombresCategorias[i]);
 
-                // Estética del botón
+                
                 g.FillRectangle(new SolidBrush(Color.FromArgb(180, 0, 0, 0)), rect.X + 5, rect.Y + 5, rect.Width, rect.Height); // Sombra
                 g.FillRectangle(new SolidBrush(Color.MediumSlateBlue), rect); // Fondo morado
                 g.DrawRectangle(new Pen(Color.White, 3), rect); // Borde blanco
@@ -63,7 +63,7 @@ namespace _100mexicanosDijeron
 
         private void SeleccionCategoria_MouseClick(object sender, MouseEventArgs e)
         {
-            // Cambiamos areasBotones por botonesCategorias
+            
             foreach (var boton in botonesCategorias)
             {
                 if (boton.Key.Contains(e.Location))

@@ -9,7 +9,7 @@ namespace _100mexicanosDijeron
 {
     public partial class FormJuego : Form
     {
-        string cadenaConexion = "Server=127.0.0.1;Database=juego_trivia;Uid=root;Pwd=root;";
+        string cadenaConexion = "Server=127.0.0.1;Database=juego_trivia;Uid=root;Pwd=alex12wolf;";
 
         private string categoriaSeleccionada;
         private Image imagenFondo;
@@ -36,6 +36,7 @@ namespace _100mexicanosDijeron
                 case "Geografía": imagenFondo = Properties.Resources.Geografia; break;
                 case "Cine": imagenFondo = Properties.Resources.Cine; break;
                 case "Tecnología y video juegos": imagenFondo = Properties.Resources.VideoJuego; break;
+                case "Aleatorio": imagenFondo = Properties.Resources.Deporte; break;
                 default: imagenFondo = Properties.Resources.categoria; break;
             }
 
@@ -44,18 +45,26 @@ namespace _100mexicanosDijeron
 
         private void DescargarMazoDePreguntas()
         {
-            int idCategoria = 1;
-            if (categoriaSeleccionada == "Deportes") idCategoria = 2;
-            else if (categoriaSeleccionada == "Geografía") idCategoria = 3;
-            else if (categoriaSeleccionada == "Cine") idCategoria = 4;
-            else if (categoriaSeleccionada == "Tecnología y video juegos") idCategoria = 5;
+            string query = "";
+            if (categoriaSeleccionada == "Aleatorio")
+            {
+                query = "SELECT tipo, pregunta, opcion_a, opcion_b, opcion_c, opcion_d, respuesta_correcta FROM preguntas ORDER BY RAND() LIMIT 10";
+            }
+            else
+            {
+                int idCategoria = 1;
+                if (categoriaSeleccionada == "Deportes") idCategoria = 2;
+                else if (categoriaSeleccionada == "Geografía") idCategoria = 3;
+                else if (categoriaSeleccionada == "Cine") idCategoria = 4;
+                else if (categoriaSeleccionada == "Tecnología y video juegos") idCategoria = 5;
+                query = $"SELECT tipo, pregunta, opcion_a, opcion_b, opcion_c, opcion_d, respuesta_correcta FROM preguntas WHERE categoria_id = {idCategoria} ORDER BY RAND()";
+            }
 
             using (MySqlConnection conexion = new MySqlConnection(cadenaConexion))
             {
                 try
                 {
                     conexion.Open();
-                    string query = $"SELECT tipo, pregunta, opcion_a, opcion_b, opcion_c, opcion_d, respuesta_correcta FROM preguntas WHERE categoria_id = {idCategoria} ORDER BY RAND()";
 
                     MySqlCommand comando = new MySqlCommand(query, conexion);
                     MySqlDataReader reader = comando.ExecuteReader();
