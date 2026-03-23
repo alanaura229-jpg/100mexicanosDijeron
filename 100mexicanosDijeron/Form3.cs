@@ -9,8 +9,7 @@ namespace _100mexicanosDijeron
 {
     public partial class FormJuego : Form
     {
-        
-        string cadenaConexion = "Server=127.0.0.1;Database=juego_trivia;Uid=root;Pwd=root;";
+        string cadenaConexion = "Server=127.0.0.1;Database=juego_trivia;Uid=root;Pwd=alex12wolf;";
 
         private string categoriaSeleccionada;
         private Image imagenFondo;
@@ -25,6 +24,7 @@ namespace _100mexicanosDijeron
         private Timer timerResultado = new Timer();
         private bool mostrandoResultado = false;
         private bool ultimaRespuestaCorrecta = false;
+        private bool juegoTerminado = false; 
 
         public FormJuego(String categoria)
         {
@@ -114,8 +114,9 @@ namespace _100mexicanosDijeron
             }
             else
             {
-                MessageBox.Show($"¡Fin de la categoría {categoriaSeleccionada}!\n\nAciertos: {aciertos}\nErrores: {errores}\n\n¡Has completado las {mazoPreguntas.Count} preguntas!", "Resultados Finales");
-                this.Close();
+                // <-- CAMBIO AQUÍ: Adiós al feo MessageBox
+                juegoTerminado = true;
+                this.Invalidate();
             }
         }
 
@@ -134,6 +135,10 @@ namespace _100mexicanosDijeron
 
             Font fuenteTitulo = new Font("Arial", 20, FontStyle.Bold);
             g.DrawString($"Categoría: {categoriaSeleccionada}  |  Pregunta {indicePreguntaActual + 1} de {mazoPreguntas.Count}", fuenteTitulo, Brushes.LightGray, 50, 30);
+
+            string marcador = $"Aciertos: {aciertos}    Errores: {errores}";
+            SizeF tamMarcador = g.MeasureString(marcador, fuenteTitulo);
+            g.DrawString(marcador, fuenteTitulo, Brushes.Yellow, this.ClientSize.Width - tamMarcador.Width - 50, 30);
 
             Font fuentePregunta = new Font("Showcard Gothic", 25, FontStyle.Bold);
             SizeF tamPregunta = g.MeasureString(pActual.Texto, fuentePregunta, this.ClientSize.Width - 100);
@@ -246,10 +251,39 @@ namespace _100mexicanosDijeron
                         yCentrado + tamMsj.Height + 20);
                 }
             }
+
+          
+            if (juegoTerminado)
+            {
+                using (SolidBrush capaOscura = new SolidBrush(Color.FromArgb(230, 0, 0, 0)))
+                    g.FillRectangle(capaOscura, 0, 0, this.ClientSize.Width, this.ClientSize.Height);
+
+                string tituloFin = "¡FIN DE LA CATEGORÍA!";
+                Font fuenteFin = new Font("Showcard Gothic", 50, FontStyle.Bold);
+                SizeF tamTitulo = g.MeasureString(tituloFin, fuenteFin);
+                g.DrawString(tituloFin, fuenteFin, Brushes.Gold, (this.ClientSize.Width / 2) - (tamTitulo.Width / 2), (this.ClientSize.Height / 2) - 150);
+
+                string textoPuntos = $"ACIERTOS: {aciertos}      ERRORES: {errores}";
+                Font fuentePuntos = new Font("Arial", 40, FontStyle.Bold);
+                SizeF tamPuntos = g.MeasureString(textoPuntos, fuentePuntos);
+                g.DrawString(textoPuntos, fuentePuntos, Brushes.White, (this.ClientSize.Width / 2) - (tamPuntos.Width / 2), (this.ClientSize.Height / 2));
+
+                string textoSalir = "Haz clic para salir...";
+                Font fuenteSalir = new Font("Arial", 20, FontStyle.Italic);
+                SizeF tamSalir = g.MeasureString(textoSalir, fuenteSalir);
+                g.DrawString(textoSalir, fuenteSalir, Brushes.LightGray, (this.ClientSize.Width / 2) - (tamSalir.Width / 2), (this.ClientSize.Height / 2) + 120);
+            }
         }
 
         private void FormJuego_MouseClick(object sender, MouseEventArgs e)
         {
+            // <-- CAMBIO AQUÍ: Si el juego ya terminó, cualquier clic cierra la ventana
+            if (juegoTerminado)
+            {
+                this.Close();
+                return;
+            }
+
             if (indicePreguntaActual >= mazoPreguntas.Count || mostrandoResultado) return;
 
             foreach (var opcion in areasOpciones)

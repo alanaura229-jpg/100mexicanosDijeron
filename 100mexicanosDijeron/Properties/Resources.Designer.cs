@@ -73,6 +73,16 @@ namespace _100mexicanosDijeron.Properties {
         /// <summary>
         ///   Busca un recurso adaptado de tipo System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap Aleatorio {
+            get {
+                object obj = ResourceManager.GetObject("Aleatorio", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Busca un recurso adaptado de tipo System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap categoria {
             get {
                 object obj = ResourceManager.GetObject("categoria", resourceCulture);

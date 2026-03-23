@@ -125,6 +125,7 @@
     <None Include="Resources\Cine1.jpg" />
     <None Include="Resources\Deporte1.jpg" />
     <None Include="Resources\Geografia1.jpg" />
+    <None Include="Resources\Aleatorio.jpeg" />
     <Content Include="Resources\Imag\10\a.jpg" />
     <Content Include="Resources\Imag\10\b.png" />
     <Content Include="Resources\Imag\10\c.jpg" />
