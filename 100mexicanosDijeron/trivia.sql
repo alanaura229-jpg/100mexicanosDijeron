@@ -25,7 +25,7 @@ CREATE TABLE preguntas (
     respuesta_correcta CHAR(1) NOT NULL,
     
     FOREIGN KEY (categoria_id) REFERENCES categorias(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+);
 
 -- 4. Insertar Categorías
 INSERT INTO categorias (id, nombre) VALUES 
@@ -108,3 +108,53 @@ INSERT INTO preguntas (categoria_id, tipo, pregunta, opcion_a, opcion_b, opcion_
 (5, 'imagen', '¿Cómo es el símbolo de Bluetooth?', 'C:\\carrera\\5sem\\interfaces\\Imag\\24\\a.jpg', 'C:\\carrera\\5sem\\interfaces\\Imag\\24\\b.png', 'C:\\carrera\\5sem\\interfaces\\Imag\\24\\c.jpg', 'C:\\carrera\\5sem\\interfaces\\Imag\\24\\d.jpg', 'b'),
 (5, 'imagen', 'Muestra la imagen de un USB tipo C.', 'C:\\carrera\\5sem\\interfaces\\Imag\\25\\a.jpg', 'C:\\carrera\\5sem\\interfaces\\Imag\\25\\b.jpg', 'C:\\carrera\\5sem\\interfaces\\Imag\\25\\c.jpg', 'C:\\carrera\\5sem\\interfaces\\Imag\\25\\d.jpg', 'a');
 
+-- 6. Crear la tabla de resultados de usuarios
+CREATE TABLE resultados_usuarios (
+    id                  INT AUTO_INCREMENT PRIMARY KEY,
+    nombre              VARCHAR(100)  NOT NULL,
+    categoria_id        INT           NOT NULL,
+    preguntas_correctas INT           NOT NULL DEFAULT 0,
+    puntuacion          DECIMAL(5,2)  NOT NULL DEFAULT 0.00,
+    fecha_partida       DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ 
+    FOREIGN KEY (categoria_id) REFERENCES categorias(id) ON DELETE CASCADE
+);
+ 
+-- Consulta para ver resultados 
+SELECT
+    ru.id,
+	ru.nombre,
+	c.nombre AS categoria,
+    ru.preguntas_correctas,
+    ru.puntuacion,
+    ru.fecha_partida
+FROM resultados_usuarios ru
+JOIN categorias c ON ru.categoria_id = c.id;
+
+-- 7. Crear la tabla de detalle por pregunta respondida
+CREATE TABLE detalle_respuestas (
+    id                  INT AUTO_INCREMENT PRIMARY KEY,
+    resultado_id        INT           NOT NULL,
+    pregunta_id         INT           NOT NULL,
+    categoria_id        INT           NOT NULL,
+    respuesta_dada      CHAR(1)       NOT NULL,
+    es_correcta         TINYINT(1)    NOT NULL DEFAULT 0,
+ 
+    FOREIGN KEY (resultado_id)  REFERENCES resultados_usuarios(id) ON DELETE CASCADE,
+    FOREIGN KEY (pregunta_id)   REFERENCES preguntas(id)           ON DELETE CASCADE,
+    FOREIGN KEY (categoria_id)  REFERENCES categorias(id)          ON DELETE CASCADE
+); 
+ -- Consulta para ver el detalle de respuestas 
+ SELECT
+     dr.id,
+     ru.nombre AS usuario,
+     c.nombre AS categoria,
+     p.pregunta,
+     dr.respuesta_dada,
+     p.respuesta_correcta,
+     CASE WHEN dr.es_correcta = 1 THEN 'Correcta'
+                                  ELSE 'Incorrecta' END  AS resultado
+ FROM detalle_respuestas dr
+ JOIN resultados_usuarios ru ON dr.resultado_id = ru.id
+ JOIN categorias           c  ON dr.categoria_id = c.id
+ JOIN preguntas            p  ON dr.pregunta_id  = p.id;
