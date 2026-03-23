@@ -24,7 +24,7 @@ namespace _100mexicanosDijeron
         private Timer timerResultado = new Timer();
         private bool mostrandoResultado = false;
         private bool ultimaRespuestaCorrecta = false;
-        private bool juegoTerminado = false; 
+        private bool juegoTerminado = false;
 
         public FormJuego(String categoria)
         {
@@ -114,7 +114,6 @@ namespace _100mexicanosDijeron
             }
             else
             {
-                // <-- CAMBIO AQUÍ: Adiós al feo MessageBox
                 juegoTerminado = true;
                 this.Invalidate();
             }
@@ -252,7 +251,6 @@ namespace _100mexicanosDijeron
                 }
             }
 
-          
             if (juegoTerminado)
             {
                 using (SolidBrush capaOscura = new SolidBrush(Color.FromArgb(230, 0, 0, 0)))
@@ -268,7 +266,7 @@ namespace _100mexicanosDijeron
                 SizeF tamPuntos = g.MeasureString(textoPuntos, fuentePuntos);
                 g.DrawString(textoPuntos, fuentePuntos, Brushes.White, (this.ClientSize.Width / 2) - (tamPuntos.Width / 2), (this.ClientSize.Height / 2));
 
-                string textoSalir = "Haz clic para salir...";
+                string textoSalir = "Haz clic en cualquier parte para regresar al menú...";
                 Font fuenteSalir = new Font("Arial", 20, FontStyle.Italic);
                 SizeF tamSalir = g.MeasureString(textoSalir, fuenteSalir);
                 g.DrawString(textoSalir, fuenteSalir, Brushes.LightGray, (this.ClientSize.Width / 2) - (tamSalir.Width / 2), (this.ClientSize.Height / 2) + 120);
@@ -277,9 +275,17 @@ namespace _100mexicanosDijeron
 
         private void FormJuego_MouseClick(object sender, MouseEventArgs e)
         {
-            // <-- CAMBIO AQUÍ: Si el juego ya terminó, cualquier clic cierra la ventana
             if (juegoTerminado)
             {
+                foreach (Form pantalla in Application.OpenForms)
+                {
+                    if (pantalla is SeleccionCategoria)
+                    {
+                        pantalla.Show();
+                        break;
+                    }
+                }
+
                 this.Close();
                 return;
             }
