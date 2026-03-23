@@ -33,8 +33,14 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="MySql.Data, Version=9.6.0.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
+      <HintPath>packages\MySql.Data.9.6.0\lib\net462\MySql.Data.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Management" />
+    <Reference Include="System.Transactions" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -77,18 +83,19 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-      <DesignTime>True</DesignTime>
-    </Compile>
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Settings.settings</DependentUpon>
@@ -114,6 +121,11 @@
     <None Include="Resources\musica.jpg" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\VideoJuego1.jpg" />
+    <None Include="Resources\Cine1.jpg" />
+    <None Include="Resources\Deporte1.jpg" />
+    <None Include="Resources\Geografia1.jpg" />
+    <None Include="Resources\Aleatorio.jpeg" />
     <Content Include="Resources\Imag\10\a.jpg" />
     <Content Include="Resources\Imag\10\b.png" />
     <Content Include="Resources\Imag\10\c.jpg" />
@@ -214,6 +226,9 @@
     <Content Include="Resources\Imag\9\b.png" />
     <Content Include="Resources\Imag\9\c.jpg" />
     <Content Include="Resources\Imag\9\d.jpg" />
+    <None Include="Resources\menuPrincipal.jpg" />
+    <None Include="Resources\pantallaMenu.jpg" />
+    <None Include="Resources\Musica2.jpg" />
     <Content Include="Resources\trivia.sql" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

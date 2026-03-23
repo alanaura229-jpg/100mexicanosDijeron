@@ -12,37 +12,74 @@ namespace _100mexicanosDijeron
 {
     public partial class SeleccionCategoria : Form
     {
+
+        Dictionary<Rectangle, string> botonesCategorias = new Dictionary<Rectangle, string>();
+        string[] nombresCategorias = { "Geografía", "Deportes", "Música", "Cine", "Tecnología y video juegos", "Aleatorio"};
         public SeleccionCategoria()
         {
             InitializeComponent();
+            this.DoubleBuffered = true; 
+            this.WindowState = FormWindowState.Maximized;
         }
 
-        private void btnMusica_Click(object sender, EventArgs e)
+        private void SeleccionCategoria_Paint(object sender, PaintEventArgs e)
         {
-            seleccionMusica seleccionCategoria = new seleccionMusica();
-            seleccionCategoria.Show();
+            Graphics g = e.Graphics;
+            g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
 
-            this.Hide();
+            // Fondo
+            g.DrawImage(Properties.Resources.categoria, 0, 0, this.ClientSize.Width, this.ClientSize.Height);
+
+
+            // Dibuja botones
+            botonesCategorias.Clear();
+            int anchoBoton = 400;
+            int altoBoton = 40;
+            int separacion = 20;
+
+            // Calcula el inicio
+            int xInicio = (this.ClientSize.Width / 2) - (anchoBoton / 2);
+            int yInicio = 260;
+
+            Font fuenteBoton = new Font("Showcard Gothic", 18, FontStyle.Bold);
+
+            for (int i = 0; i < nombresCategorias.Length; i++)
+            {
+                Rectangle rect = new Rectangle(xInicio, yInicio + (i * (altoBoton + separacion)), anchoBoton, altoBoton);
+                botonesCategorias.Add(rect, nombresCategorias[i]);
+
+                
+                g.FillRectangle(new SolidBrush(Color.FromArgb(180, 0, 0, 0)), rect.X + 5, rect.Y + 5, rect.Width, rect.Height); // Sombra
+                g.FillRectangle(new SolidBrush(Color.MediumSlateBlue), rect); // Fondo morado
+                g.DrawRectangle(new Pen(Color.White, 3), rect); // Borde blanco
+
+                // Texto de la categoría
+                SizeF tamTexto = g.MeasureString(nombresCategorias[i], fuenteBoton);
+                g.DrawString(nombresCategorias[i], fuenteBoton, Brushes.White,
+                    rect.X + (rect.Width / 2) - (tamTexto.Width / 2),
+                    rect.Y + (rect.Height / 2) - (tamTexto.Height / 2));
+            }
         }
 
-        private void btnCine_Click(object sender, EventArgs e)
+        private void SeleccionCategoria_MouseClick(object sender, MouseEventArgs e)
         {
-            MessageBox.Show("¡Elegiste Cine! Próximamente cargaremos las preguntas.");
+            
+            foreach (var boton in botonesCategorias)
+            {
+                if (boton.Key.Contains(e.Location))
+                {
+                    string eleccion = boton.Value;
+                    FormJuego pantallaPreguntas = new FormJuego(eleccion);
+                    pantallaPreguntas.Show();
+                    this.Hide();
+                    break;
+                }
+            }
         }
 
-        private void btnGeografía_Click(object sender, EventArgs e)
+        private void SeleccionCategoria_Resize(object sender, EventArgs e)
         {
-            MessageBox.Show("¡Elegiste Geografía! Próximamente cargaremos las preguntas.");
-        }
-
-        private void btnDeportes_Click(object sender, EventArgs e)
-        {
-            MessageBox.Show("¡Elegiste Deportes! Próximamente cargaremos las preguntas.");
-        }
-
-        private void btnTec_Click(object sender, EventArgs e)
-        {
-            MessageBox.Show("¡Elegiste Tecnología y Video Juegos! Próximamente cargaremos las preguntas.");
+            this.Invalidate();
         }
     }
 }
