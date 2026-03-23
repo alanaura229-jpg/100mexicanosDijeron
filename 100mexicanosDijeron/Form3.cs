@@ -9,7 +9,8 @@ namespace _100mexicanosDijeron
 {
     public partial class FormJuego : Form
     {
-        string cadenaConexion = "Server=127.0.0.1;Database=juego_trivia;Uid=root;Pwd=alex12wolf;";
+        
+        string cadenaConexion = "Server=127.0.0.1;Database=juego_trivia;Uid=root;Pwd=root;";
 
         private string categoriaSeleccionada;
         private Image imagenFondo;
@@ -21,6 +22,9 @@ namespace _100mexicanosDijeron
 
         private PreguntaTrivia pActual;
         private Dictionary<Rectangle, string> areasOpciones = new Dictionary<Rectangle, string>();
+        private Timer timerResultado = new Timer();
+        private bool mostrandoResultado = false;
+        private bool ultimaRespuestaCorrecta = false;
 
         public FormJuego(String categoria)
         {
@@ -28,6 +32,8 @@ namespace _100mexicanosDijeron
             this.categoriaSeleccionada = categoria;
             this.DoubleBuffered = true;
             this.WindowState = FormWindowState.Maximized;
+            timerResultado.Interval = 2000;
+            timerResultado.Tick += TimerResultado_Tick;
 
             switch (categoria)
             {
@@ -36,7 +42,7 @@ namespace _100mexicanosDijeron
                 case "Geografía": imagenFondo = Properties.Resources.Geografia; break;
                 case "Cine": imagenFondo = Properties.Resources.Cine; break;
                 case "Tecnología y video juegos": imagenFondo = Properties.Resources.VideoJuego; break;
-                case "Aleatorio": imagenFondo = Properties.Resources.Deporte; break;
+                case "Aleatorio": imagenFondo = Properties.Resources.categoria; break;
                 default: imagenFondo = Properties.Resources.categoria; break;
             }
 
@@ -65,7 +71,6 @@ namespace _100mexicanosDijeron
                 try
                 {
                     conexion.Open();
-
                     MySqlCommand comando = new MySqlCommand(query, conexion);
                     MySqlDataReader reader = comando.ExecuteReader();
 
@@ -89,7 +94,6 @@ namespace _100mexicanosDijeron
                         {
                             nuevaPregunta.Opciones = new string[] { opA, opB, opC, opD };
                         }
-
                         mazoPreguntas.Add(nuevaPregunta);
                     }
                 }
@@ -98,7 +102,6 @@ namespace _100mexicanosDijeron
                     MessageBox.Show("Error de conexión: " + ex.Message);
                 }
             }
-
             MostrarSiguientePregunta();
         }
 
@@ -216,11 +219,38 @@ namespace _100mexicanosDijeron
                     g.DrawString(pActual.Opciones[i], fuenteOpciones, Brushes.White, rect.X + 20, rect.Y + (rect.Height / 2) - (tamTexto.Height / 2));
                 }
             }
+
+            if (mostrandoResultado)
+            {
+                using (SolidBrush capaOscura = new SolidBrush(Color.FromArgb(180, 0, 0, 0)))
+                    g.FillRectangle(capaOscura, 0, 0, this.ClientSize.Width, this.ClientSize.Height);
+
+                string mensaje = ultimaRespuestaCorrecta ? "¡CORRECTO! ✔" : "¡INCORRECTO! ❌";
+                Color colorMensaje = ultimaRespuestaCorrecta ? Color.LimeGreen : Color.Red;
+                Font fuenteMensaje = new Font("Showcard Gothic", 60, FontStyle.Bold);
+
+                SizeF tamMsj = g.MeasureString(mensaje, fuenteMensaje);
+                float xCentrado = (this.ClientSize.Width / 2) - (tamMsj.Width / 2);
+                float yCentrado = (this.ClientSize.Height / 2) - (tamMsj.Height / 2);
+
+                g.DrawString(mensaje, fuenteMensaje, new SolidBrush(colorMensaje), xCentrado, yCentrado);
+
+                if (!ultimaRespuestaCorrecta)
+                {
+                    string textoAyuda = "La respuesta era el inciso: " + pActual.Correcta.ToUpper();
+                    Font fuenteAyuda = new Font("Arial", 20, FontStyle.Bold);
+                    SizeF tamAyuda = g.MeasureString(textoAyuda, fuenteAyuda);
+
+                    g.DrawString(textoAyuda, fuenteAyuda, Brushes.White,
+                        (this.ClientSize.Width / 2) - (tamAyuda.Width / 2),
+                        yCentrado + tamMsj.Height + 20);
+                }
+            }
         }
 
         private void FormJuego_MouseClick(object sender, MouseEventArgs e)
         {
-            if (indicePreguntaActual >= mazoPreguntas.Count) return;
+            if (indicePreguntaActual >= mazoPreguntas.Count || mostrandoResultado) return;
 
             foreach (var opcion in areasOpciones)
             {
@@ -230,20 +260,30 @@ namespace _100mexicanosDijeron
 
                     if (incisoElegido == pActual.Correcta)
                     {
-                        MessageBox.Show("¡CORRECTO!");
+                        ultimaRespuestaCorrecta = true;
                         aciertos++;
                     }
                     else
                     {
-                        MessageBox.Show("Incorrecto. La respuesta era el inciso " + pActual.Correcta.ToUpper());
+                        ultimaRespuestaCorrecta = false;
                         errores++;
                     }
 
-                    indicePreguntaActual++;
-                    MostrarSiguientePregunta();
+                    mostrandoResultado = true;
+                    this.Invalidate();
+                    timerResultado.Start();
                     break;
                 }
             }
+        }
+
+        private void TimerResultado_Tick(object sender, EventArgs e)
+        {
+            timerResultado.Stop();
+            mostrandoResultado = false;
+
+            indicePreguntaActual++;
+            MostrarSiguientePregunta();
         }
 
         private void FormJuego_Resize(object sender, EventArgs e)
