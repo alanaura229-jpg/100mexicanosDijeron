@@ -124,14 +124,20 @@
   <data name="Geografia" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Geografia1.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="Resultados" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Resultados1.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Aleatorio" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Aleatorio.jpeg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="VideoJuego" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\VideoJuego1.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="categoria" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\categoria.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="1" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\1.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="categoria" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\categoria.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Deporte" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Deporte1.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -142,7 +148,7 @@
   <data name="pantallaMenu" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\pantallaMenu.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Aleatorio" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Aleatorio.jpeg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="PantallaRes" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\PantallaRes.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

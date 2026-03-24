@@ -42,8 +42,8 @@ namespace _100mexicanosDijeron
                 case "Geografía": imagenFondo = Properties.Resources.Geografia; break;
                 case "Cine": imagenFondo = Properties.Resources.Cine; break;
                 case "Tecnología y video juegos": imagenFondo = Properties.Resources.VideoJuego; break;
-                case "Aleatorio": imagenFondo = Properties.Resources.categoria; break;
-                default: imagenFondo = Properties.Resources.categoria; break;
+                case "Aleatorio": imagenFondo = Properties.Resources.Aleatorio; break;
+                default: imagenFondo = Properties.Resources.Aleatorio; break;
             }
 
             DescargarMazoDePreguntas();
@@ -196,7 +196,7 @@ namespace _100mexicanosDijeron
                     }
                     catch
                     {
-                        g.DrawString("Error cargar imagen", fuenteOpciones, Brushes.Red, rect.X + 20, rect.Y + 40);
+                        g.DrawString("(•‿•)\r\n /| |\\\r\n ", fuenteOpciones, Brushes.Black, rect.X + 20, rect.Y + 40);
                     }
                 }
             }

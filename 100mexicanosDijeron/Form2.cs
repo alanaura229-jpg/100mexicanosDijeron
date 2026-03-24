@@ -34,9 +34,11 @@ namespace _100mexicanosDijeron
 
             // Botón Historial (Dorado)
             botonHistorial = new Rectangle(this.ClientSize.Width - 250, 40, 200, 50);
-            g.FillRectangle(Brushes.Gold, botonHistorial);
+            g.FillRectangle(Brushes.MediumSlateBlue, botonHistorial);
             g.DrawRectangle(new Pen(Color.White, 2), botonHistorial);
-            g.DrawString("VER HISTORIAL", new Font("Arial", 12, FontStyle.Bold), Brushes.Black, botonHistorial.X + 30, botonHistorial.Y + 15);
+            g.DrawString("VER HISTORIAL", new Font("Arial", 12, FontStyle.Bold), Brushes.White, botonHistorial.X + 30, botonHistorial.Y + 15);
+
+
 
             botonesCategorias.Clear();
             int yInicio = 250;
@@ -45,6 +47,7 @@ namespace _100mexicanosDijeron
                 Rectangle r = new Rectangle(this.ClientSize.Width / 2 - 200, yInicio + (i * 60), 400, 45);
                 botonesCategorias.Add(r, nombresCategorias[i]);
                 g.FillRectangle(Brushes.MediumSlateBlue, r);
+                g.DrawRectangle(new Pen(Color.White, 2), r);
                 g.DrawString(nombresCategorias[i], new Font("Arial", 14, FontStyle.Bold), Brushes.White, r.X + 20, r.Y + 10);
             }
         }

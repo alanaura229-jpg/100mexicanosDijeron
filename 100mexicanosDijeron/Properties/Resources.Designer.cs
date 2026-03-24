@@ -143,6 +143,26 @@ namespace _100mexicanosDijeron.Properties {
         /// <summary>
         ///   Busca un recurso adaptado de tipo System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap PantallaRes {
+            get {
+                object obj = ResourceManager.GetObject("PantallaRes", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Busca un recurso adaptado de tipo System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Resultados {
+            get {
+                object obj = ResourceManager.GetObject("Resultados", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Busca un recurso adaptado de tipo System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap VideoJuego {
             get {
                 object obj = ResourceManager.GetObject("VideoJuego", resourceCulture);

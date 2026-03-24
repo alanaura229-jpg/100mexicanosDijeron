@@ -87,7 +87,7 @@ namespace _100mexicanosDijeron
                 g.FillRectangle(bFondo, rectCajaTexto);
 
             // Borde dorado pixelado
-            g.DrawRectangle(new Pen(Color.Gold, 4), rectCajaTexto);
+            g.DrawRectangle(new Pen(Color.MediumSlateBlue, 4), rectCajaTexto);
 
             // Etiqueta arriba de la caja
             Font fuenteEtiqueta = new Font("Showcard Gothic", 16);
@@ -109,6 +109,7 @@ namespace _100mexicanosDijeron
             // Relleno y borde (LimeGreen para resaltar)
             g.FillRectangle(new SolidBrush(Color.LimeGreen), rectBotonJugar);
             g.DrawRectangle(new Pen(Color.White, 3), rectBotonJugar);
+
 
             // Texto "JUGAR"
             Font fuenteBoton = new Font("Showcard Gothic", 20);

@@ -68,26 +68,26 @@ namespace _100mexicanosDijeron
             g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
 
             // Fondo y Contenedor
-            g.DrawImage(Properties.Resources.Aleatorio, 0, 0, this.ClientSize.Width, this.ClientSize.Height);
-            Rectangle r = new Rectangle(this.ClientSize.Width / 2 - 350, 50, 700, this.ClientSize.Height - 150);
+            g.DrawImage(Properties.Resources.PantallaRes, 0, 0, this.ClientSize.Width, this.ClientSize.Height);
+            Rectangle r = new Rectangle(this.ClientSize.Width / 2 - 275, 50, 550, this.ClientSize.Height - 150);
             g.FillRectangle(new SolidBrush(Color.FromArgb(230, 20, 20, 20)), r);
-            g.DrawRectangle(new Pen(Color.Gold, 3), r);
+            g.DrawRectangle(new Pen(Color.FromArgb(221, 160, 221), 2), r);
 
             // Título
-            Font fuenteTitulo = new Font("Arial", 22, FontStyle.Bold);
-            g.DrawString("HISTORIAL GENERAL DE PARTIDAS", fuenteTitulo, Brushes.Gold, r.X + 20, r.Y + 20);
+            Font fuenteTitulo = new Font("Segoe UI", 20, FontStyle.Bold);
+            g.DrawString("HISTORIAL DE PARTIDAS", fuenteTitulo, Brushes.Pink, r.X + 20, r.Y + 20);
 
             // Cabecera de columnas para que sea intuitivo
-            Font fuenteHeader = new Font("Consolas", 12, FontStyle.Bold);
+            Font fuenteHeader = new Font("Consolas", 11, FontStyle.Bold);
             string encabezado = string.Format("{0,-18} | {1,-10} | {2,-5} | {3,-5}", "FECHA", "PUNTOS", "CORR", "ERR");
-            g.DrawString(encabezado, fuenteHeader, Brushes.Cyan, r.X + 30, r.Y + 70);
-            g.DrawLine(new Pen(Color.Cyan, 1), r.X + 30, r.Y + 90, r.X + 670, r.Y + 90);
+            g.DrawString(encabezado, fuenteHeader, Brushes.White, r.X + 30, r.Y + 80);
+            g.DrawLine(new Pen(Color.FromArgb(147, 112, 219), 1), r.X + 30, r.Y + 102, r.X + 520, r.Y + 102);
 
             // Listado de datos
-            Font fuenteDatos = new Font("Consolas", 11);
+            Font fuenteDatos = new Font("Consolas", 10);
             if (lista.Count == 0)
             {
-                g.DrawString("No hay registros disponibles.", fuenteDatos, Brushes.White, r.X + 30, r.Y + 110);
+                g.DrawString("No hay registros disponibles.", fuenteDatos, Brushes.White, r.X + 30, r.Y + 120);
             }
             else
             {
@@ -95,13 +95,12 @@ namespace _100mexicanosDijeron
                 {
                     // Dibujamos cada línea con un color distinto si es par/impar para que sea fácil de leer
                     Brush colorTexto = (i % 2 == 0) ? Brushes.White : Brushes.LightGray;
-                    g.DrawString(lista[i], fuenteDatos, colorTexto, r.X + 30, r.Y + 110 + (i * 30));
+                    g.DrawString(lista[i], fuenteDatos, colorTexto, r.X + 30, r.Y + 120 + (i * 28));
                 }
             }
 
-            g.DrawString("Haz clic en cualquier parte para salir", new Font("Arial", 10, FontStyle.Italic), Brushes.Gray, r.X + 20, r.Bottom + 10);
+            g.DrawString("Clic para salir", new Font("Arial", 30, FontStyle.Italic), Brushes.Black, r.X + 20, r.Bottom + 5);
         }
-
         private void FormHistorial_MouseClick(object sender, MouseEventArgs e) => this.Close();
     }
 
