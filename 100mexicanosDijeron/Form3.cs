@@ -9,7 +9,7 @@ namespace _100mexicanosDijeron
 {
     public partial class FormJuego : Form
     {
-        string cadenaConexion = "Server=127.0.0.1;Database=juego_trivia;Uid=root;Pwd=alex12wolf;";
+        string cadenaConexion = "Server=127.0.0.1;Database=juego_trivia;Uid=root;Pwd=orion6363Vv!;";
 
         private string categoriaSeleccionada;
         private Image imagenFondo;
@@ -275,20 +275,85 @@ namespace _100mexicanosDijeron
 
         private void FormJuego_MouseClick(object sender, MouseEventArgs e)
         {
+
             if (juegoTerminado)
             {
-                foreach (Form pantalla in Application.OpenForms)
+                try
                 {
-                    if (pantalla is SeleccionCategoria)
+                    using (MySqlConnection conexion = new MySqlConnection(cadenaConexion))
                     {
-                        pantalla.Show();
+                        conexion.Open();
+                        // 1. SQL corregido: Incluye preguntas_incorrectas
+                        string sql = "INSERT INTO historial_partidas (usuario_id, puntuacion_final, preguntas_correctas, preguntas_incorrectas, fecha) " +
+                                     "VALUES (@uid, @pts, @corr, @incorr, NOW())";
+
+                        MySqlCommand cmd = new MySqlCommand(sql, conexion);
+
+                        // 2. Parámetros exactos (deben coincidir con los @ del SQL)
+                        cmd.Parameters.AddWithValue("@uid", Sesion.IdUsuario);
+                        cmd.Parameters.AddWithValue("@pts", aciertos * 100);
+                        cmd.Parameters.AddWithValue("@corr", aciertos);
+                        cmd.Parameters.AddWithValue("@incorr", errores); // Ahora sí coincide con el SQL
+
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("No se guardó el score: " + ex.Message);
+                }
+
+                // 3. Regresar a categorías (Fuera del try para que siempre funcione)
+                foreach (Form f in Application.OpenForms)
+                {
+                    if (f is SeleccionCategoria)
+                    {
+                        f.Show();
                         break;
                     }
                 }
-
                 this.Close();
                 return;
-            }
+            }if (juegoTerminado)
+{
+    try
+    {
+        using (MySqlConnection conexion = new MySqlConnection(cadenaConexion))
+        {
+            conexion.Open();
+            // 1. SQL corregido: Incluye preguntas_incorrectas
+            string sql = "INSERT INTO historial_partidas (usuario_id, puntuacion_final, preguntas_correctas, preguntas_incorrectas, fecha) " +
+                         "VALUES (@uid, @pts, @corr, @incorr, NOW())";
+
+            MySqlCommand cmd = new MySqlCommand(sql, conexion);
+            
+            // 2. Parámetros exactos (deben coincidir con los @ del SQL)
+            cmd.Parameters.AddWithValue("@uid", Sesion.IdUsuario);
+            cmd.Parameters.AddWithValue("@pts", aciertos * 100);
+            cmd.Parameters.AddWithValue("@corr", aciertos);
+            cmd.Parameters.AddWithValue("@incorr", errores); // Ahora sí coincide con el SQL
+
+            cmd.ExecuteNonQuery();
+        }
+    }
+    catch (Exception ex)
+    {
+        MessageBox.Show("No se guardó el score: " + ex.Message);
+    }
+
+    // 3. Regresar a categorías (Fuera del try para que siempre funcione)
+    foreach (Form f in Application.OpenForms)
+    {
+        if (f is SeleccionCategoria)
+        {
+            f.Show();
+            break;
+        }
+    }
+    this.Close();
+    return;
+}
+
 
             if (indicePreguntaActual >= mazoPreguntas.Count || mostrandoResultado) return;
 

@@ -15,6 +15,8 @@ namespace _100mexicanosDijeron
 
         Dictionary<Rectangle, string> botonesCategorias = new Dictionary<Rectangle, string>();
         string[] nombresCategorias = { "Geografía", "Deportes", "Música", "Cine", "Tecnología y video juegos", "Aleatorio"};
+        Rectangle botonHistorial;
+
         public SeleccionCategoria()
         {
             InitializeComponent();
@@ -30,47 +32,36 @@ namespace _100mexicanosDijeron
             // Fondo
             g.DrawImage(Properties.Resources.categoria, 0, 0, this.ClientSize.Width, this.ClientSize.Height);
 
+            // Botón Historial (Dorado)
+            botonHistorial = new Rectangle(this.ClientSize.Width - 250, 40, 200, 50);
+            g.FillRectangle(Brushes.Gold, botonHistorial);
+            g.DrawRectangle(new Pen(Color.White, 2), botonHistorial);
+            g.DrawString("VER HISTORIAL", new Font("Arial", 12, FontStyle.Bold), Brushes.Black, botonHistorial.X + 30, botonHistorial.Y + 15);
 
-            // Dibuja botones
             botonesCategorias.Clear();
-            int anchoBoton = 400;
-            int altoBoton = 40;
-            int separacion = 20;
-
-            // Calcula el inicio
-            int xInicio = (this.ClientSize.Width / 2) - (anchoBoton / 2);
-            int yInicio = 260;
-
-            Font fuenteBoton = new Font("Showcard Gothic", 18, FontStyle.Bold);
-
+            int yInicio = 250;
             for (int i = 0; i < nombresCategorias.Length; i++)
             {
-                Rectangle rect = new Rectangle(xInicio, yInicio + (i * (altoBoton + separacion)), anchoBoton, altoBoton);
-                botonesCategorias.Add(rect, nombresCategorias[i]);
-
-                
-                g.FillRectangle(new SolidBrush(Color.FromArgb(180, 0, 0, 0)), rect.X + 5, rect.Y + 5, rect.Width, rect.Height); // Sombra
-                g.FillRectangle(new SolidBrush(Color.MediumSlateBlue), rect); // Fondo morado
-                g.DrawRectangle(new Pen(Color.White, 3), rect); // Borde blanco
-
-                // Texto de la categoría
-                SizeF tamTexto = g.MeasureString(nombresCategorias[i], fuenteBoton);
-                g.DrawString(nombresCategorias[i], fuenteBoton, Brushes.White,
-                    rect.X + (rect.Width / 2) - (tamTexto.Width / 2),
-                    rect.Y + (rect.Height / 2) - (tamTexto.Height / 2));
+                Rectangle r = new Rectangle(this.ClientSize.Width / 2 - 200, yInicio + (i * 60), 400, 45);
+                botonesCategorias.Add(r, nombresCategorias[i]);
+                g.FillRectangle(Brushes.MediumSlateBlue, r);
+                g.DrawString(nombresCategorias[i], new Font("Arial", 14, FontStyle.Bold), Brushes.White, r.X + 20, r.Y + 10);
             }
         }
 
         private void SeleccionCategoria_MouseClick(object sender, MouseEventArgs e)
         {
-            
-            foreach (var boton in botonesCategorias)
+            if (botonHistorial.Contains(e.Location))
             {
-                if (boton.Key.Contains(e.Location))
+                new FormHistorial().ShowDialog();
+                return;
+            }
+
+            foreach (var b in botonesCategorias)
+            {
+                if (b.Key.Contains(e.Location))
                 {
-                    string eleccion = boton.Value;
-                    FormJuego pantallaPreguntas = new FormJuego(eleccion);
-                    pantallaPreguntas.Show();
+                    new FormJuego(b.Value).Show();
                     this.Hide();
                     break;
                 }
