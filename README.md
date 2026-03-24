@@ -1,4 +1,5 @@
-Quiz Time – Trivia 🎯
+**Quiz Time – Trivia**
+
 Juego de trivia para escritorio hecho en C# como proyecto de la materia de Interfaces Gráficas. 
 Las preguntas vienen de una base de datos en MySQL y el jugador tiene que elegir entre 4 opciones por pregunta.
 
