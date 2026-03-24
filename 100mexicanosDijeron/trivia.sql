@@ -108,3 +108,51 @@ INSERT INTO preguntas (categoria_id, tipo, pregunta, opcion_a, opcion_b, opcion_
 (5, 'imagen', '¿Cómo es el símbolo de Bluetooth?', 'C:\\carrera\\5sem\\interfaces\\Imag\\24\\a.jpg', 'C:\\carrera\\5sem\\interfaces\\Imag\\24\\b.png', 'C:\\carrera\\5sem\\interfaces\\Imag\\24\\c.jpg', 'C:\\carrera\\5sem\\interfaces\\Imag\\24\\d.jpg', 'b'),
 (5, 'imagen', 'Muestra la imagen de un USB tipo C.', 'C:\\carrera\\5sem\\interfaces\\Imag\\25\\a.jpg', 'C:\\carrera\\5sem\\interfaces\\Imag\\25\\b.jpg', 'C:\\carrera\\5sem\\interfaces\\Imag\\25\\c.jpg', 'C:\\carrera\\5sem\\interfaces\\Imag\\25\\d.jpg', 'a');
 
+
+*CREATE DATABASE juego_trivia;
+ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'orion6363Vv!';
+FLUSH PRIVILEGES;
+USE juego_trivia;
+
+USE juego_trivia;
+
+-- 1. Crear tabla de Usuarios
+-- Esta tabla guardará el nombre para mostrar en la columna 'nombre' de las imágenes 2 y 3.
+CREATE TABLE usuarios (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL UNIQUE, -- El nombre de usuario será único
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 2. Asegurarnos de que la tabla preguntas tenga la columna para la ruta de la imagen
+-- Ejecuta esto SOLO si tu tabla 'preguntas' actual no tiene la columna 'imagen_ruta'
+-- ALTER TABLE preguntas ADD COLUMN imagen_ruta VARCHAR(255) DEFAULT NULL;
+
+-- 3. Crear tabla de Historial de Partidas (Encabezado)
+-- Cumple con guardar score, categoría y fecha (Imagen 1 y 2).
+CREATE TABLE historial_partidas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT,
+    categoria_id INT, -- Asumiendo que usas IDs para categorías como en tu código
+    puntuacion_final INT NOT NULL, -- Score total (puntos)
+    preguntas_correctas INT NOT NULL, -- Cantidad de aciertos
+    preguntas_incorrectas INT NOT NULL, -- Cantidad de errores
+    fecha_partida TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
+    FOREIGN KEY (categoria_id) REFERENCES categorias(id) -- Si tienes una tabla categorias, si no, quita esta línea
+);
+
+-- 4. Crear tabla de Detalle de Partida (Pregunta por pregunta)
+-- Cumple con "qué preguntas contesto correctamente" (Imagen 1 y 3).
+-- Guarda la respuesta dada por el usuario para compararla.
+CREATE TABLE detalle_partida (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    partida_id INT,
+    pregunta_id INT,
+    respuesta_dada CHAR(1), -- 'a', 'b', 'c', 'd'
+    es_correcta BOOLEAN, -- TRUE si acertó, FALSE si falló
+    FOREIGN KEY (partida_id) REFERENCES historial_partidas(id),
+    FOREIGN KEY (pregunta_id) REFERENCES preguntas(id)
+);
+
+ALTER TABLE historial_partidas ADD COLUMN fecha DATETIME;*
