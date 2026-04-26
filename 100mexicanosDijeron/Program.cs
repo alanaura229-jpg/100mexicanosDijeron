@@ -16,7 +16,8 @@ namespace _100mexicanosDijeron
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new pantallaCat());
+            //Application.Run(new pantallaCat());
+            Application.Run(new FormConexion());
         }
     }
 }
