@@ -33,7 +33,7 @@ namespace ServidorTrivia
     class Program
     {
         const int PUERTO = 54321;
-        const int MAX_JUGADORES = 3;
+        const int MAX_JUGADORES = 1;
         const string CADENA_DB = "Server=127.0.0.1;Database=juego_trivia;Uid=root;Pwd=orion6363Vv!;";
 
         static List<Jugador> jugadores = new List<Jugador>();

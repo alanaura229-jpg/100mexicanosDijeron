@@ -9,6 +9,7 @@ using System.Windows.Forms;
 
 namespace _100mexicanosDijeron
 {
+
     public partial class FormConexion : Form
     {
         const int PUERTO = 54321;
@@ -28,6 +29,8 @@ namespace _100mexicanosDijeron
 
         TcpClient tcpCliente;
         NetworkStream stream;
+
+        volatile bool escuchando = true;
 
         public FormConexion()
         {
@@ -180,13 +183,31 @@ namespace _100mexicanosDijeron
             }
         }
 
-        void EscucharServidor()
+        /*void EscucharServidor()
         {
             var sb = new StringBuilder();
             byte[] buffer = new byte[1];
             try
             {
                 while (tcpCliente.Connected)
+                {
+                    int n = stream.Read(buffer, 0, 1);
+                    if (n == 0) break;
+                    char c = (char)buffer[0];
+                    if (c == '\n') { ProcesarMensaje(sb.ToString()); sb.Clear(); }
+                    else sb.Append(c);
+                }
+            }
+            catch { }
+        }*/
+
+        void EscucharServidor()
+        {
+            var sb = new StringBuilder();
+            byte[] buffer = new byte[1];
+            try
+            {
+                while (tcpCliente.Connected && escuchando)
                 {
                     int n = stream.Read(buffer, 0, 1);
                     if (n == 0) break;
@@ -211,6 +232,8 @@ namespace _100mexicanosDijeron
                     ActualizarLobby(msg);
                     break;
                 case "inicio_juego":
+                    escuchando = false;  // 🛑 detener el hilo viejo PRIMERO
+                    Thread.Sleep(50);    // pequeña pausa para asegurarse
                     this.Invoke((Action)(() =>
                     {
                         timerCursor.Stop();
@@ -218,6 +241,16 @@ namespace _100mexicanosDijeron
                         this.Hide();
                     }));
                     break;
+                    /*
+                case "inicio_juego":
+                    this.Invoke((Action)(() =>
+                    {
+                        timerCursor.Stop();
+                        new FormJuegoRed(stream, nombre.Trim()).Show();
+                        this.Hide();
+                    }));
+                    break;
+                    */
                 case "error":
                     string err = msg["mensaje"].GetString();
                     this.Invoke((Action)(() =>
