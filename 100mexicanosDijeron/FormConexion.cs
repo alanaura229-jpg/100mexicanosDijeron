@@ -221,7 +221,9 @@ namespace _100mexicanosDijeron
 
         void ProcesarMensaje(string linea)
         {
-            if (string.IsNullOrEmpty(linea)) return;
+            if (string.IsNullOrWhiteSpace(linea)) return;
+            try
+            {
             var msg = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(linea);
             string tipo = msg["tipo"].GetString();
 
@@ -232,30 +234,36 @@ namespace _100mexicanosDijeron
                     ActualizarLobby(msg);
                     break;
                 case "inicio_juego":
-                    escuchando = false;  // 🛑 detener el hilo viejo PRIMERO
-                    Thread.Sleep(50);    // pequeña pausa para asegurarse
+                    escuchando = false; // Detenemos la escucha en este formulario
                     this.Invoke((Action)(() =>
                     {
                         timerCursor.Stop();
-                        new FormJuegoRed(stream, nombre.Trim()).Show();
+                        // Pasamos el stream y el nombre al nuevo formulario que ya tiene la lógica de la API
+                        FormJuegoRed juego = new FormJuegoRed(stream, nombre.Trim());
+                        juego.Show();
                         this.Hide();
                     }));
                     break;
-                    /*
-                case "inicio_juego":
-                    this.Invoke((Action)(() =>
-                    {
-                        timerCursor.Stop();
-                        new FormJuegoRed(stream, nombre.Trim()).Show();
-                        this.Hide();
-                    }));
-                    break;
-                    */
+                /*
+            case "inicio_juego":
+                this.Invoke((Action)(() =>
+                {
+                    timerCursor.Stop();
+                    new FormJuegoRed(stream, nombre.Trim()).Show();
+                    this.Hide();
+                }));
+                break;
+                */
                 case "error":
                     string err = msg["mensaje"].GetString();
                     this.Invoke((Action)(() =>
                         MessageBox.Show(err, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)));
                     break;
+            }
+            }
+            catch (JsonException)
+            {
+                // Si llega algo que no es JSON, simplemente lo ignoramos para que no truene
             }
         }
 

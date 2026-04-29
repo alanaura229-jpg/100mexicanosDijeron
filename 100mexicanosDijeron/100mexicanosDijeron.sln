@@ -7,6 +7,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "100mexicanosDijeron", "100m
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServidorTrivia", "..\ServidorTrivia\ServidorTrivia.csproj", "{FB864191-6888-4052-A21B-10B0CCD73D3A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TriviaAPI.AppHost", "..\TriviaAPI\TriviaAPI.AppHost\TriviaAPI.AppHost.csproj", "{B596AA1B-5168-4A5B-828F-F390A582A490}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TriviaAPI.Server", "..\TriviaAPI\TriviaAPI.Server\TriviaAPI.Server.csproj", "{D92438DC-1795-8A7D-3310-BB612EF15667}"
+EndProject
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "frontend", "..\TriviaAPI\frontend\frontend.esproj", "{55F4FF06-F780-E6B4-C8FA-7E10A59BF7D9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +27,20 @@ Global
 		{FB864191-6888-4052-A21B-10B0CCD73D3A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FB864191-6888-4052-A21B-10B0CCD73D3A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FB864191-6888-4052-A21B-10B0CCD73D3A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B596AA1B-5168-4A5B-828F-F390A582A490}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B596AA1B-5168-4A5B-828F-F390A582A490}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B596AA1B-5168-4A5B-828F-F390A582A490}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B596AA1B-5168-4A5B-828F-F390A582A490}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D92438DC-1795-8A7D-3310-BB612EF15667}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D92438DC-1795-8A7D-3310-BB612EF15667}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D92438DC-1795-8A7D-3310-BB612EF15667}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D92438DC-1795-8A7D-3310-BB612EF15667}.Release|Any CPU.Build.0 = Release|Any CPU
+		{55F4FF06-F780-E6B4-C8FA-7E10A59BF7D9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{55F4FF06-F780-E6B4-C8FA-7E10A59BF7D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{55F4FF06-F780-E6B4-C8FA-7E10A59BF7D9}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{55F4FF06-F780-E6B4-C8FA-7E10A59BF7D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{55F4FF06-F780-E6B4-C8FA-7E10A59BF7D9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{55F4FF06-F780-E6B4-C8FA-7E10A59BF7D9}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

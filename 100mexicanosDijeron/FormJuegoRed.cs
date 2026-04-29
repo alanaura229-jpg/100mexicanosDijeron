@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace _100mexicanosDijeron
@@ -14,6 +16,7 @@ namespace _100mexicanosDijeron
         NetworkStream stream;
         string miNombre;
 
+        private static readonly HttpClient clientWeb = new HttpClient();
         enum Estado { EsperandoPregunta, MostrandoPregunta, MostrandoResultado, FinJuego }
         Estado estado = Estado.EsperandoPregunta;
 
@@ -52,7 +55,7 @@ namespace _100mexicanosDijeron
             new Thread(EscucharServidor) { IsBackground = true }.Start();
         }
 
-        void EscucharServidor()
+        async void EscucharServidor()
         {
             var sb = new StringBuilder();
             byte[] buffer = new byte[1];
@@ -60,14 +63,78 @@ namespace _100mexicanosDijeron
             {
                 while (true)
                 {
+                    // 1. Seguimos leyendo del socket letra por letra hasta encontrar el final (\n)
                     int n = stream.Read(buffer, 0, 1);
                     if (n == 0) break;
+
                     char c = (char)buffer[0];
-                    if (c == '\n') { ProcesarMensaje(sb.ToString()); sb.Clear(); }
-                    else sb.Append(c);
+                    if (c != '\n')
+                    {
+                        sb.Append(c);
+                        continue; // Sigue leyendo hasta completar la línea
+                    }
+
+                    // 2. Cuando llegamos aquí, ya tenemos un mensaje completo en sb
+                    string mensajeRecibido = sb.ToString();
+                    sb.Clear();
+
+                    if (string.IsNullOrWhiteSpace(mensajeRecibido)) continue;
+
+                    try
+                    {
+                        // 3. Analizamos el JSON que mandó el Servidor TCP
+                        var doc = JsonDocument.Parse(mensajeRecibido);
+                        if (doc.RootElement.TryGetProperty("tipo", out JsonElement tipoElement))
+                        {
+                            string tipo = tipoElement.GetString();
+
+                            if (tipo == "nueva_pregunta")
+                            {
+                                // Sacamos el ID que nos mandó el servidor
+                                int idPregunta = doc.RootElement.GetProperty("id").GetInt32();
+
+                                // 4. ¡VAMOS A LA API POR LOS DATOS!
+                                await CargarPreguntaDesdeAPI(idPregunta);
+                            }
+                            else
+                            {
+                                // Si es otro tipo de mensaje (resultado, fin, etc.)
+                                // puedes llamar a tu antiguo ProcesarMensaje
+                                ProcesarMensaje(mensajeRecibido);
+                            }
+                        }
+                    }
+                    catch (JsonException) { /* Mensaje mal formado, ignorar */ }
                 }
             }
-            catch { }
+            catch { /* Desconexión */ }
+        }
+
+        private async Task CargarPreguntaDesdeAPI(int id)
+        {
+            try
+            {
+                // IP de la PC donde corre la API (la que te dio ipconfig)
+                string url = $"http://127.0.0.1:5000/preguntas/id/{id}";
+
+                string response = await clientWeb.GetStringAsync(url);
+                var p = JsonSerializer.Deserialize<PreguntaDTO>(response);
+
+                // Actualizamos la pantalla (Invoke es necesario porque estamos en otro hilo)
+                this.Invoke((Action)(() => {
+                    this.textoPregunta = p.pregunta;
+                    this.opciones = new string[] { p.opcion_a, p.opcion_b, p.opcion_c, p.opcion_d };
+                    this.respuestaCorrecta = p.correcta;
+
+                    this.estado = Estado.MostrandoPregunta;
+                    this.yaRespondio = false;
+                    this.Invalidate(); // Esto activa el Paint para dibujar la pregunta
+                }));
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error al contactar la API: " + ex.Message);
+            }
         }
 
         void ProcesarMensaje(string linea)
@@ -296,4 +363,17 @@ namespace _100mexicanosDijeron
 
         protected override void OnResize(EventArgs e) { base.OnResize(e); Invalidate(); }
     }
+}
+
+
+public class PreguntaDTO
+{
+    public string id { get; set; }
+    public string tipo { get; set; }
+    public string pregunta { get; set; }
+    public string opcion_a { get; set; }
+    public string opcion_b { get; set; }
+    public string opcion_c { get; set; }
+    public string opcion_d { get; set; }
+    public string correcta { get; set; }
 }
