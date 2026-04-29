@@ -34,7 +34,7 @@ namespace ServidorTrivia
     {
         const int PUERTO = 54321;
         const int MAX_JUGADORES = 1;
-        const string CADENA_DB = "Server=127.0.0.1;Database=juego_trivia;Uid=root;Pwd=alex12wolf;";
+        const string CADENA_DB = "Server=127.0.0.1;Database=juego_trivia;Uid=root;Pwd=orion6363Vv!;";
 
         static List<Jugador> jugadores = new List<Jugador>();
         static object lockJugadores = new object();

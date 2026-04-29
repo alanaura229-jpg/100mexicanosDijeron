@@ -216,6 +216,14 @@ namespace _100mexicanosDijeron
             }
         }
 
+        private string ObtenerNombreArchivo(string rutaCompleta)
+        {
+            if (string.IsNullOrEmpty(rutaCompleta)) return "";
+            // Si la ruta trae barras \, nos quedamos con lo último (ej: a.jpg)
+            string[] partes = rutaCompleta.Split('\\');
+            return partes[partes.Length - 1];
+        }
+
         void DibujarEspera(Graphics g)
         {
             Font f = new Font("Showcard Gothic", 30, FontStyle.Bold);
@@ -255,8 +263,49 @@ namespace _100mexicanosDijeron
                 g.FillRectangle(new SolidBrush(colorFondo), rect);
                 g.DrawRectangle(new Pen(Color.White, 2), rect);
 
-                SizeF tamTxt = g.MeasureString(opciones[i], fOpciones);
-                g.DrawString(opciones[i], fOpciones, Brushes.White, rect.X + 20, rect.Y + (rect.Height - tamTxt.Height) / 2);
+                // --- LÓGICA PARA DETECTAR Y DIBUJAR IMÁGENES ---
+                string contenido = opciones[i];
+
+                // Si el texto contiene una extensión de imagen, intentamos cargarla
+                if (contenido.ToLower().Contains(".jpg") || contenido.ToLower().Contains(".png"))
+                {
+                    string nombreArchivo = ObtenerNombreArchivo(contenido);
+                    // Construimos la ruta hacia tu carpeta de recursos local
+                    string rutaLocal = System.IO.Path.Combine(Application.StartupPath, "Resources", "Imag", nombreArchivo);
+
+                    if (System.IO.File.Exists(rutaLocal))
+                    {
+                        try
+                        {
+                            using (Image img = Image.FromFile(rutaLocal))
+                            {
+                                // Calculamos el tamaño para que la imagen quepa bien en el botón
+                                float ratio = (float)img.Width / img.Height;
+                                int altoImg = rect.Height - 10;
+                                int anchoImg = (int)(altoImg * ratio);
+
+                                // Dibujamos la imagen centrada en el botón
+                                g.DrawImage(img, rect.X + (rect.Width - anchoImg) / 2, rect.Y + 5, anchoImg, altoImg);
+                            }
+                        }
+                        catch
+                        {
+                            // Si falla al cargar la imagen, dibujamos el nombre como texto por seguridad
+                            g.DrawString(nombreArchivo, fOpciones, Brushes.White, rect.X + 20, rect.Y + 15);
+                        }
+                    }
+                    else
+                    {
+                        // Si el archivo no existe en la carpeta local, mostramos el nombre del archivo
+                        g.DrawString(nombreArchivo, fOpciones, Brushes.White, rect.X + 20, rect.Y + 15);
+                    }
+                }
+                else
+                {
+                    // Si es texto normal (sin .jpg o .png), lo dibujamos como siempre
+                    SizeF tamTxt = g.MeasureString(contenido, fOpciones);
+                    g.DrawString(contenido, fOpciones, Brushes.White, rect.X + 20, rect.Y + (rect.Height - tamTxt.Height) / 2);
+                }
             }
         }
 
