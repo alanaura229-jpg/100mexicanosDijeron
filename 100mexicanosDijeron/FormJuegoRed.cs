@@ -258,55 +258,46 @@ namespace _100mexicanosDijeron
                 Rectangle rect = new Rectangle(xBtn, yBtn + i * (altoBtn + sep), anchoBtn, altoBtn);
                 areasOpciones.Add(rect, incisos[i]);
 
-                Color colorFondo = yaRespondio ? Color.FromArgb(120, 100, 100, 100) : Color.MediumSlateBlue;
+                // Dibujar el botón
                 g.FillRectangle(new SolidBrush(Color.FromArgb(180, 0, 0, 0)), rect.X + 5, rect.Y + 5, rect.Width, rect.Height);
-                g.FillRectangle(new SolidBrush(colorFondo), rect);
+                g.FillRectangle(new SolidBrush(yaRespondio ? Color.Gray : Color.MediumSlateBlue), rect);
                 g.DrawRectangle(new Pen(Color.White, 2), rect);
 
-                // --- LÓGICA PARA DETECTAR Y DIBUJAR IMÁGENES ---
                 string contenido = opciones[i];
 
-                // Si el texto contiene una extensión de imagen, intentamos cargarla
+                // ¿Es una imagen? (revisamos si termina en .jpg o .png)
                 if (contenido.ToLower().Contains(".jpg") || contenido.ToLower().Contains(".png"))
                 {
-                    string nombreArchivo = ObtenerNombreArchivo(contenido);
-                    // Construimos la ruta hacia tu carpeta de recursos local
-                    string rutaLocal = System.IO.Path.Combine(Application.StartupPath, "Resources", "Imag", nombreArchivo);
+                    string nombreReal = ObtenerNombreArchivoLimpio(contenido);
+                    string rutaFinal = System.IO.Path.Combine(Application.StartupPath, "Resources", "Imag", nombreReal);
 
-                    if (System.IO.File.Exists(rutaLocal))
+                    if (System.IO.File.Exists(rutaFinal))
                     {
-                        try
+                        using (Image img = Image.FromFile(rutaFinal))
                         {
-                            using (Image img = Image.FromFile(rutaLocal))
-                            {
-                                // Calculamos el tamaño para que la imagen quepa bien en el botón
-                                float ratio = (float)img.Width / img.Height;
-                                int altoImg = rect.Height - 10;
-                                int anchoImg = (int)(altoImg * ratio);
-
-                                // Dibujamos la imagen centrada en el botón
-                                g.DrawImage(img, rect.X + (rect.Width - anchoImg) / 2, rect.Y + 5, anchoImg, altoImg);
-                            }
-                        }
-                        catch
-                        {
-                            // Si falla al cargar la imagen, dibujamos el nombre como texto por seguridad
-                            g.DrawString(nombreArchivo, fOpciones, Brushes.White, rect.X + 20, rect.Y + 15);
+                            // Dibujamos la imagen centrada en el botón
+                            g.DrawImage(img, rect.X + (rect.Width / 2) - 30, rect.Y + 5, 60, rect.Height - 10);
                         }
                     }
                     else
                     {
-                        // Si el archivo no existe en la carpeta local, mostramos el nombre del archivo
-                        g.DrawString(nombreArchivo, fOpciones, Brushes.White, rect.X + 20, rect.Y + 15);
+                        // Si no encuentra el archivo, nos dirá dónde lo está buscando
+                        g.DrawString("Error: No existe " + nombreReal, new Font("Arial", 8), Brushes.Red, rect.X + 5, rect.Y + 5);
                     }
                 }
                 else
                 {
-                    // Si es texto normal (sin .jpg o .png), lo dibujamos como siempre
-                    SizeF tamTxt = g.MeasureString(contenido, fOpciones);
-                    g.DrawString(contenido, fOpciones, Brushes.White, rect.X + 20, rect.Y + (rect.Height - tamTxt.Height) / 2);
+                    // Si es texto normal, lo dibuja como siempre
+                    g.DrawString(contenido, fOpciones, Brushes.White, rect.X + 20, rect.Y + 15);
                 }
             }
+        }
+
+        private string ObtenerNombreArchivoLimpio(string rutaBaseDatos)
+        {
+            if (string.IsNullOrEmpty(rutaBaseDatos)) return "";
+            // Esto toma "C:\carrera\interfaces\Imag\1\a.jpg" y devuelve solo "a.jpg"
+            return System.IO.Path.GetFileName(rutaBaseDatos);
         }
 
         void DibujarResultado(Graphics g)
@@ -412,7 +403,11 @@ namespace _100mexicanosDijeron
 
         protected override void OnResize(EventArgs e) { base.OnResize(e); Invalidate(); }
     }
+
+
+
 }
+
 
 
 public class PreguntaDTO
