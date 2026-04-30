@@ -6,6 +6,8 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Windows.Forms;
+using System.Net;
+using System.IO;
 
 namespace _100mexicanosDijeron
 {
@@ -13,32 +15,35 @@ namespace _100mexicanosDijeron
     {
         NetworkStream stream;
         string miNombre;
+        string ipServidor; // VARIABLE NUEVA PARA LA IP DINÁMICA
 
         enum Estado { EsperandoPregunta, MostrandoPregunta, MostrandoResultado, FinJuego }
         Estado estado = Estado.EsperandoPregunta;
 
         int numeroPregunta = 0, totalPreguntas = 0;
         string textoPregunta = "";
+        string tipoPregunta = "";
+        Image[] imagenesOpciones = new Image[4];
         string[] opciones = new string[4];
 
         string respuestaCorrecta = "";
         string miRespuesta = "";
         bool miEsCorrecta = false;
         List<(string nombre, string inciso, bool correcto)> respuestasJugadores = new List<(string, string, bool)>();
-
         List<(string nombre, int aciertos, int errores)> estadisticas = new List<(string, int, int)>();
         string ganador = "";
 
         Dictionary<Rectangle, string> areasOpciones = new Dictionary<Rectangle, string>();
         bool yaRespondio = false;
-
         System.Windows.Forms.Timer timerResultado = new System.Windows.Forms.Timer { Interval = 4000 };
 
-        public FormJuegoRed(NetworkStream stream, string nombre)
+        // ACTUALIZAMOS EL CONSTRUCTOR PARA RECIBIR LA IP
+        public FormJuegoRed(NetworkStream stream, string nombre, string ip)
         {
             InitializeComponent();
             this.stream = stream;
             this.miNombre = nombre;
+            this.ipServidor = ip; // GUARDAMOS LA IP QUE SE USÓ PARA CONECTAR
             this.DoubleBuffered = true;
             this.WindowState = FormWindowState.Maximized;
 
@@ -89,11 +94,35 @@ namespace _100mexicanosDijeron
             numeroPregunta = msg["numero"].GetInt32();
             totalPreguntas = msg["total"].GetInt32();
             textoPregunta = msg["textoPregunta"].GetString();
+            tipoPregunta = msg.ContainsKey("tipoPregunta") ? msg["tipoPregunta"].GetString() : "opcion_multiple";
             yaRespondio = false;
 
             int i = 0;
             foreach (var op in msg["opciones"].EnumerateArray())
                 opciones[i++] = op.GetString();
+
+            if (tipoPregunta == "imagen")
+            {
+                using (var wc = new WebClient())
+                {
+                    for (int j = 0; j < 4; j++)
+                    {
+                        if (imagenesOpciones[j] != null) { imagenesOpciones[j].Dispose(); imagenesOpciones[j] = null; }
+                        try
+                        {
+                            string rutaLimpia = opciones[j].Substring(3).Trim();
+                            // USAMOS LA IP DINÁMICA AQUÍ
+                            byte[] imgBytes = wc.DownloadData($"http://{ipServidor}:8000/imagenes/{rutaLimpia}");
+                            var ms = new MemoryStream(imgBytes);
+                            imagenesOpciones[j] = Image.FromStream(ms);
+                        }
+                        catch
+                        {
+                            imagenesOpciones[j] = null;
+                        }
+                    }
+                }
+            }
 
             estado = Estado.MostrandoPregunta;
             this.Invoke((Action)Invalidate);
@@ -174,30 +203,59 @@ namespace _100mexicanosDijeron
 
             areasOpciones.Clear();
             string[] incisos = { "a", "b", "c", "d" };
-            int anchoBtn = 560, altoBtn = 60, sep = 28;
-            int xBtn = cx - anchoBtn / 2;
-            int yBtn = (int)(rectP.Bottom + 40);
 
-            for (int i = 0; i < 4; i++)
+            if (tipoPregunta == "imagen")
             {
-                Rectangle rect = new Rectangle(xBtn, yBtn + i * (altoBtn + sep), anchoBtn, altoBtn);
-                areasOpciones.Add(rect, incisos[i]);
+                int anchoBoton = 320, altoBoton = 220, separacionX = 80, separacionY = 40;
+                int anchoTotal = (anchoBoton * 2) + separacionX;
+                int xInicio = cx - (anchoTotal / 2);
+                int yInicio = (int)(rectP.Bottom + 30);
 
-                Color colorFondo = yaRespondio ? Color.FromArgb(120, 100, 100, 100) : Color.MediumSlateBlue;
-                g.FillRectangle(new SolidBrush(Color.FromArgb(180, 0, 0, 0)), rect.X + 5, rect.Y + 5, rect.Width, rect.Height);
-                g.FillRectangle(new SolidBrush(colorFondo), rect);
-                g.DrawRectangle(new Pen(Color.White, 2), rect);
+                for (int i = 0; i < 4; i++)
+                {
+                    int columna = i % 2;
+                    int fila = i / 2;
+                    Rectangle rect = new Rectangle(xInicio + (columna * (anchoBoton + separacionX)), yInicio + (fila * (altoBoton + separacionY)), anchoBoton, altoBoton);
+                    areasOpciones.Add(rect, incisos[i]);
 
-                SizeF tamTxt = g.MeasureString(opciones[i], fOpciones);
-                g.DrawString(opciones[i], fOpciones, Brushes.White, rect.X + 20, rect.Y + (rect.Height - tamTxt.Height) / 2);
+                    Color colorFondo = yaRespondio ? Color.FromArgb(120, 100, 100, 100) : Color.MediumSlateBlue;
+                    g.FillRectangle(new SolidBrush(Color.FromArgb(180, 0, 0, 0)), rect.X + 5, rect.Y + 5, rect.Width, rect.Height);
+                    g.FillRectangle(new SolidBrush(colorFondo), rect);
+                    g.DrawRectangle(new Pen(Color.White, 3), rect);
+
+                    g.DrawString(incisos[i].ToUpper() + ")", fOpciones, Brushes.White, rect.X, rect.Y - 25);
+
+                    if (imagenesOpciones[i] != null)
+                        g.DrawImage(imagenesOpciones[i], rect.X + 10, rect.Y + 10, rect.Width - 20, rect.Height - 20);
+                    else
+                        g.DrawString("Error\nal cargar", fOpciones, Brushes.Black, rect.X + 100, rect.Y + 80);
+                }
+            }
+            else
+            {
+                int anchoBtn = 560, altoBtn = 60, sep = 28;
+                int xBtn = cx - anchoBtn / 2;
+                int yBtn = (int)(rectP.Bottom + 40);
+
+                for (int i = 0; i < 4; i++)
+                {
+                    Rectangle rect = new Rectangle(xBtn, yBtn + i * (altoBtn + sep), anchoBtn, altoBtn);
+                    areasOpciones.Add(rect, incisos[i]);
+
+                    Color colorFondo = yaRespondio ? Color.FromArgb(120, 100, 100, 100) : Color.MediumSlateBlue;
+                    g.FillRectangle(new SolidBrush(Color.FromArgb(180, 0, 0, 0)), rect.X + 5, rect.Y + 5, rect.Width, rect.Height);
+                    g.FillRectangle(new SolidBrush(colorFondo), rect);
+                    g.DrawRectangle(new Pen(Color.White, 2), rect);
+
+                    SizeF tamTxt = g.MeasureString(opciones[i], fOpciones);
+                    g.DrawString(opciones[i], fOpciones, Brushes.White, rect.X + 20, rect.Y + (rect.Height - tamTxt.Height) / 2);
+                }
             }
         }
 
         void DibujarResultado(Graphics g)
         {
-            int cx = ClientSize.Width / 2;
-            int cy = ClientSize.Height / 2;
-
+            int cx = ClientSize.Width / 2, cy = ClientSize.Height / 2;
             using (SolidBrush capa = new SolidBrush(Color.FromArgb(190, 0, 0, 0)))
                 g.FillRectangle(capa, 0, 0, ClientSize.Width, ClientSize.Height);
 
@@ -230,9 +288,7 @@ namespace _100mexicanosDijeron
 
         void DibujarFinJuego(Graphics g)
         {
-            int cx = ClientSize.Width / 2;
-            int cy = ClientSize.Height / 2;
-
+            int cx = ClientSize.Width / 2, cy = ClientSize.Height / 2;
             using (SolidBrush capa = new SolidBrush(Color.FromArgb(220, 0, 0, 0)))
                 g.FillRectangle(capa, 0, 0, ClientSize.Width, ClientSize.Height);
 

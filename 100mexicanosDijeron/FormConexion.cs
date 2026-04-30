@@ -9,7 +9,6 @@ using System.Windows.Forms;
 
 namespace _100mexicanosDijeron
 {
-
     public partial class FormConexion : Form
     {
         const int PUERTO = 54321;
@@ -41,7 +40,6 @@ namespace _100mexicanosDijeron
             this.MouseClick += OnMouseClick;
             timerCursor.Tick += (s, e) => { mostrarCursor = !mostrarCursor; Invalidate(); };
             timerCursor.Start();
-
         }
 
         private void OnKeyPress(object sender, KeyPressEventArgs e)
@@ -87,10 +85,6 @@ namespace _100mexicanosDijeron
             Font fLabel = new Font("Showcard Gothic", 14);
             Font fTexto = new Font("Arial", 20, FontStyle.Bold);
             Font fHint = new Font("Arial", 11, FontStyle.Italic);
-
-            //string titulo = "CONECTAR AL SERVIDOR";
-            //SizeF tamTit = g.MeasureString(titulo, fTitulo);
-            //g.DrawString(titulo, fTitulo, Brushes.White, cx - tamTit.Width / 2, cy - 200);
 
             rectCajaNombre = new Rectangle(cx - 220, cy - 110, 440, 55);
             DibujarCampo(g, rectCajaNombre, "TU NOMBRE:", nombre, escribiendoNombre, fLabel, fTexto);
@@ -183,24 +177,6 @@ namespace _100mexicanosDijeron
             }
         }
 
-        /*void EscucharServidor()
-        {
-            var sb = new StringBuilder();
-            byte[] buffer = new byte[1];
-            try
-            {
-                while (tcpCliente.Connected)
-                {
-                    int n = stream.Read(buffer, 0, 1);
-                    if (n == 0) break;
-                    char c = (char)buffer[0];
-                    if (c == '\n') { ProcesarMensaje(sb.ToString()); sb.Clear(); }
-                    else sb.Append(c);
-                }
-            }
-            catch { }
-        }*/
-
         void EscucharServidor()
         {
             var sb = new StringBuilder();
@@ -237,20 +213,11 @@ namespace _100mexicanosDijeron
                     this.Invoke((Action)(() =>
                     {
                         timerCursor.Stop();
-                        new FormJuegoRed(stream, nombre.Trim()).Show();
+                        // AQUÍ ESTÁ LA MAGIA: LE PASAMOS LA ipServidor AL JUEGO 👇
+                        new FormJuegoRed(stream, nombre.Trim(), ipServidor.Trim()).Show();
                         this.Hide();
                     }));
                     break;
-                    /*
-                case "inicio_juego":
-                    this.Invoke((Action)(() =>
-                    {
-                        timerCursor.Stop();
-                        new FormJuegoRed(stream, nombre.Trim()).Show();
-                        this.Hide();
-                    }));
-                    break;
-                    */
                 case "error":
                     string err = msg["mensaje"].GetString();
                     this.Invoke((Action)(() =>
