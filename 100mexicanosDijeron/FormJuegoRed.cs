@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Net.Http;
+using System.IO;
+using System.Linq;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace _100mexicanosDijeron
@@ -15,33 +16,34 @@ namespace _100mexicanosDijeron
     {
         NetworkStream stream;
         string miNombre;
+        string ipServidor;
 
-        private static readonly HttpClient clientWeb = new HttpClient();
         enum Estado { EsperandoPregunta, MostrandoPregunta, MostrandoResultado, FinJuego }
         Estado estado = Estado.EsperandoPregunta;
 
         int numeroPregunta = 0, totalPreguntas = 0;
         string textoPregunta = "";
+        string tipoPregunta = "";
+        Image[] imagenesOpciones = new Image[4];
         string[] opciones = new string[4];
 
         string respuestaCorrecta = "";
         string miRespuesta = "";
         bool miEsCorrecta = false;
         List<(string nombre, string inciso, bool correcto)> respuestasJugadores = new List<(string, string, bool)>();
-
         List<(string nombre, int aciertos, int errores)> estadisticas = new List<(string, int, int)>();
         string ganador = "";
 
         Dictionary<Rectangle, string> areasOpciones = new Dictionary<Rectangle, string>();
         bool yaRespondio = false;
-
         System.Windows.Forms.Timer timerResultado = new System.Windows.Forms.Timer { Interval = 4000 };
 
-        public FormJuegoRed(NetworkStream stream, string nombre)
+        public FormJuegoRed(NetworkStream stream, string nombre, string ip)
         {
             InitializeComponent();
             this.stream = stream;
             this.miNombre = nombre;
+            this.ipServidor = ip; // guardamos la ip que viene desde el lobby
             this.DoubleBuffered = true;
             this.WindowState = FormWindowState.Maximized;
 
@@ -55,7 +57,7 @@ namespace _100mexicanosDijeron
             new Thread(EscucharServidor) { IsBackground = true }.Start();
         }
 
-        async void EscucharServidor()
+        void EscucharServidor()
         {
             var sb = new StringBuilder();
             byte[] buffer = new byte[1];
@@ -63,78 +65,14 @@ namespace _100mexicanosDijeron
             {
                 while (true)
                 {
-                    // 1. Seguimos leyendo del socket letra por letra hasta encontrar el final (\n)
                     int n = stream.Read(buffer, 0, 1);
                     if (n == 0) break;
-
                     char c = (char)buffer[0];
-                    if (c != '\n')
-                    {
-                        sb.Append(c);
-                        continue; // Sigue leyendo hasta completar la línea
-                    }
-
-                    // 2. Cuando llegamos aquí, ya tenemos un mensaje completo en sb
-                    string mensajeRecibido = sb.ToString();
-                    sb.Clear();
-
-                    if (string.IsNullOrWhiteSpace(mensajeRecibido)) continue;
-
-                    try
-                    {
-                        // 3. Analizamos el JSON que mandó el Servidor TCP
-                        var doc = JsonDocument.Parse(mensajeRecibido);
-                        if (doc.RootElement.TryGetProperty("tipo", out JsonElement tipoElement))
-                        {
-                            string tipo = tipoElement.GetString();
-
-                            if (tipo == "nueva_pregunta")
-                            {
-                                // Sacamos el ID que nos mandó el servidor
-                                int idPregunta = doc.RootElement.GetProperty("id").GetInt32();
-
-                                // 4. ¡VAMOS A LA API POR LOS DATOS!
-                                await CargarPreguntaDesdeAPI(idPregunta);
-                            }
-                            else
-                            {
-                                // Si es otro tipo de mensaje (resultado, fin, etc.)
-                                // puedes llamar a tu antiguo ProcesarMensaje
-                                ProcesarMensaje(mensajeRecibido);
-                            }
-                        }
-                    }
-                    catch (JsonException) { /* Mensaje mal formado, ignorar */ }
+                    if (c == '\n') { ProcesarMensaje(sb.ToString()); sb.Clear(); }
+                    else sb.Append(c);
                 }
             }
-            catch { /* Desconexión */ }
-        }
-
-        private async Task CargarPreguntaDesdeAPI(int id)
-        {
-            try
-            {
-                // IP de la PC donde corre la API (la que te dio ipconfig)
-                string url = $"http://127.0.0.1:5000/preguntas/id/{id}";
-
-                string response = await clientWeb.GetStringAsync(url);
-                var p = JsonSerializer.Deserialize<PreguntaDTO>(response);
-
-                // Actualizamos la pantalla (Invoke es necesario porque estamos en otro hilo)
-                this.Invoke((Action)(() => {
-                    this.textoPregunta = p.pregunta;
-                    this.opciones = new string[] { p.opcion_a, p.opcion_b, p.opcion_c, p.opcion_d };
-                    this.respuestaCorrecta = p.correcta;
-
-                    this.estado = Estado.MostrandoPregunta;
-                    this.yaRespondio = false;
-                    this.Invalidate(); // Esto activa el Paint para dibujar la pregunta
-                }));
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error al contactar la API: " + ex.Message);
-            }
+            catch { }
         }
 
         void ProcesarMensaje(string linea)
@@ -156,11 +94,47 @@ namespace _100mexicanosDijeron
             numeroPregunta = msg["numero"].GetInt32();
             totalPreguntas = msg["total"].GetInt32();
             textoPregunta = msg["textoPregunta"].GetString();
+            tipoPregunta = msg.ContainsKey("tipoPregunta") ? msg["tipoPregunta"].GetString() : "opcion_multiple";
             yaRespondio = false;
 
             int i = 0;
             foreach (var op in msg["opciones"].EnumerateArray())
                 opciones[i++] = op.GetString();
+
+            // descargamos las fotos por http si es pregunta de imagenes
+            if (tipoPregunta == "imagen")
+            {
+                using (var wc = new WebClient())
+                {
+                    for (int j = 0; j < 4; j++)
+                    {
+                        if (imagenesOpciones[j] != null) { imagenesOpciones[j].Dispose(); imagenesOpciones[j] = null; }
+                        try
+                        {
+                            // limpiamos la ruta que viene de la base de datos
+                            string rutaLimpia = opciones[j].Substring(3).Trim();
+
+                            int indexImag = rutaLimpia.IndexOf("Imag", StringComparison.OrdinalIgnoreCase);
+                            if (indexImag != -1)
+                            {
+                                rutaLimpia = rutaLimpia.Substring(indexImag + 5);
+                            }
+
+                            // cambiamos barras de windows por las de internet
+                            rutaLimpia = rutaLimpia.Replace("\\", "/");
+
+                            // pedimos la imagen directo a la ram
+                            byte[] imgBytes = wc.DownloadData($"http://{ipServidor}:8000/imagenes/{rutaLimpia}");
+                            var ms = new MemoryStream(imgBytes);
+                            imagenesOpciones[j] = Image.FromStream(ms);
+                        }
+                        catch
+                        {
+                            imagenesOpciones[j] = null; // si falla no crashea, solo no la pone
+                        }
+                    }
+                }
+            }
 
             estado = Estado.MostrandoPregunta;
             this.Invoke((Action)Invalidate);
@@ -216,14 +190,6 @@ namespace _100mexicanosDijeron
             }
         }
 
-        private string ObtenerNombreArchivo(string rutaCompleta)
-        {
-            if (string.IsNullOrEmpty(rutaCompleta)) return "";
-            // Si la ruta trae barras \, nos quedamos con lo último (ej: a.jpg)
-            string[] partes = rutaCompleta.Split('\\');
-            return partes[partes.Length - 1];
-        }
-
         void DibujarEspera(Graphics g)
         {
             Font f = new Font("Showcard Gothic", 30, FontStyle.Bold);
@@ -249,62 +215,59 @@ namespace _100mexicanosDijeron
 
             areasOpciones.Clear();
             string[] incisos = { "a", "b", "c", "d" };
-            int anchoBtn = 560, altoBtn = 60, sep = 28;
-            int xBtn = cx - anchoBtn / 2;
-            int yBtn = (int)(rectP.Bottom + 40);
 
-            for (int i = 0; i < 4; i++)
+            if (tipoPregunta == "imagen")
             {
-                Rectangle rect = new Rectangle(xBtn, yBtn + i * (altoBtn + sep), anchoBtn, altoBtn);
-                areasOpciones.Add(rect, incisos[i]);
+                int anchoBoton = 320, altoBoton = 220, separacionX = 80, separacionY = 40;
+                int anchoTotal = (anchoBoton * 2) + separacionX;
+                int xInicio = cx - (anchoTotal / 2);
+                int yInicio = (int)(rectP.Bottom + 30);
 
-                // Dibujar el botón
-                g.FillRectangle(new SolidBrush(Color.FromArgb(180, 0, 0, 0)), rect.X + 5, rect.Y + 5, rect.Width, rect.Height);
-                g.FillRectangle(new SolidBrush(yaRespondio ? Color.Gray : Color.MediumSlateBlue), rect);
-                g.DrawRectangle(new Pen(Color.White, 2), rect);
-
-                string contenido = opciones[i];
-
-                // ¿Es una imagen? (revisamos si termina en .jpg o .png)
-                if (contenido.ToLower().Contains(".jpg") || contenido.ToLower().Contains(".png"))
+                for (int i = 0; i < 4; i++)
                 {
-                    string nombreReal = ObtenerNombreArchivoLimpio(contenido);
-                    string rutaFinal = System.IO.Path.Combine(Application.StartupPath, "Resources", "Imag", nombreReal);
+                    int columna = i % 2;
+                    int fila = i / 2;
+                    Rectangle rect = new Rectangle(xInicio + (columna * (anchoBoton + separacionX)), yInicio + (fila * (altoBoton + separacionY)), anchoBoton, altoBoton);
+                    areasOpciones.Add(rect, incisos[i]);
 
-                    if (System.IO.File.Exists(rutaFinal))
-                    {
-                        using (Image img = Image.FromFile(rutaFinal))
-                        {
-                            // Dibujamos la imagen centrada en el botón
-                            g.DrawImage(img, rect.X + (rect.Width / 2) - 30, rect.Y + 5, 60, rect.Height - 10);
-                        }
-                    }
+                    Color colorFondo = yaRespondio ? Color.FromArgb(120, 100, 100, 100) : Color.MediumSlateBlue;
+                    g.FillRectangle(new SolidBrush(Color.FromArgb(180, 0, 0, 0)), rect.X + 5, rect.Y + 5, rect.Width, rect.Height);
+                    g.FillRectangle(new SolidBrush(colorFondo), rect);
+                    g.DrawRectangle(new Pen(Color.White, 3), rect);
+
+                    g.DrawString(incisos[i].ToUpper() + ")", fOpciones, Brushes.White, rect.X, rect.Y - 25);
+
+                    if (imagenesOpciones[i] != null)
+                        g.DrawImage(imagenesOpciones[i], rect.X + 10, rect.Y + 10, rect.Width - 20, rect.Height - 20);
                     else
-                    {
-                        // Si no encuentra el archivo, nos dirá dónde lo está buscando
-                        g.DrawString("Error: No existe " + nombreReal, new Font("Arial", 8), Brushes.Red, rect.X + 5, rect.Y + 5);
-                    }
+                        g.DrawString("Error\nal cargar", fOpciones, Brushes.Black, rect.X + 100, rect.Y + 80);
                 }
-                else
+            }
+            else
+            {
+                int anchoBtn = 560, altoBtn = 60, sep = 28;
+                int xBtn = cx - anchoBtn / 2;
+                int yBtn = (int)(rectP.Bottom + 40);
+
+                for (int i = 0; i < 4; i++)
                 {
-                    // Si es texto normal, lo dibuja como siempre
-                    g.DrawString(contenido, fOpciones, Brushes.White, rect.X + 20, rect.Y + 15);
+                    Rectangle rect = new Rectangle(xBtn, yBtn + i * (altoBtn + sep), anchoBtn, altoBtn);
+                    areasOpciones.Add(rect, incisos[i]);
+
+                    Color colorFondo = yaRespondio ? Color.FromArgb(120, 100, 100, 100) : Color.MediumSlateBlue;
+                    g.FillRectangle(new SolidBrush(Color.FromArgb(180, 0, 0, 0)), rect.X + 5, rect.Y + 5, rect.Width, rect.Height);
+                    g.FillRectangle(new SolidBrush(colorFondo), rect);
+                    g.DrawRectangle(new Pen(Color.White, 2), rect);
+
+                    SizeF tamTxt = g.MeasureString(opciones[i], fOpciones);
+                    g.DrawString(opciones[i], fOpciones, Brushes.White, rect.X + 20, rect.Y + (rect.Height - tamTxt.Height) / 2);
                 }
             }
         }
 
-        private string ObtenerNombreArchivoLimpio(string rutaBaseDatos)
-        {
-            if (string.IsNullOrEmpty(rutaBaseDatos)) return "";
-            // Esto toma "C:\carrera\interfaces\Imag\1\a.jpg" y devuelve solo "a.jpg"
-            return System.IO.Path.GetFileName(rutaBaseDatos);
-        }
-
         void DibujarResultado(Graphics g)
         {
-            int cx = ClientSize.Width / 2;
-            int cy = ClientSize.Height / 2;
-
+            int cx = ClientSize.Width / 2, cy = ClientSize.Height / 2;
             using (SolidBrush capa = new SolidBrush(Color.FromArgb(190, 0, 0, 0)))
                 g.FillRectangle(capa, 0, 0, ClientSize.Width, ClientSize.Height);
 
@@ -337,8 +300,13 @@ namespace _100mexicanosDijeron
 
         void DibujarFinJuego(Graphics g)
         {
-            int cx = ClientSize.Width / 2;
-            int cy = ClientSize.Height / 2;
+            int cx = ClientSize.Width / 2, cy = ClientSize.Height / 2;
+
+            // vemos quienes traen el puntaje mas alto para ver si hay empate
+            int puntajeMaximo = estadisticas.Count > 0 ? estadisticas.Max(st => st.aciertos * 100) : 0;
+            var ganadores = estadisticas.Where(st => st.aciertos * 100 == puntajeMaximo && puntajeMaximo > 0)
+                                        .Select(st => st.nombre)
+                                        .ToList();
 
             using (SolidBrush capa = new SolidBrush(Color.FromArgb(220, 0, 0, 0)))
                 g.FillRectangle(capa, 0, 0, ClientSize.Width, ClientSize.Height);
@@ -349,9 +317,25 @@ namespace _100mexicanosDijeron
             g.DrawString(titulo, fTitulo, Brushes.Gold, cx - tamT.Width / 2, cy - 250);
 
             Font fGanador = new Font("Showcard Gothic", 28, FontStyle.Bold);
-            string txtG = $"GANADOR: {ganador}";
+            string txtG;
+            Brush colorAnuncio = Brushes.LimeGreen;
+
+            if (ganadores.Count > 1)
+            {
+                txtG = "¡EMPATE!: " + string.Join(" y ", ganadores);
+                colorAnuncio = Brushes.Yellow;
+            }
+            else if (ganadores.Count == 1)
+            {
+                txtG = $"GANADOR: {ganadores[0]}";
+            }
+            else
+            {
+                txtG = "¡NADIE GANÓ!";
+            }
+
             SizeF tamG = g.MeasureString(txtG, fGanador);
-            g.DrawString(txtG, fGanador, Brushes.LimeGreen, cx - tamG.Width / 2, cy - 165);
+            g.DrawString(txtG, fGanador, colorAnuncio, cx - tamG.Width / 2, cy - 165);
 
             Font fHeader = new Font("Arial", 16, FontStyle.Bold | FontStyle.Underline);
             Font fFila = new Font("Arial", 16);
@@ -369,12 +353,15 @@ namespace _100mexicanosDijeron
             for (int i = 0; i < estadisticas.Count; i++)
             {
                 var (nomb, aciertos, errores) = estadisticas[i];
+                int puntos = aciertos * 100;
                 int y = panel.Y + 45 + i * 45;
-                Brush bNombre = nomb == ganador ? Brushes.Gold : (nomb == miNombre ? Brushes.LightSkyBlue : Brushes.White);
+
+                Brush bNombre = ganadores.Contains(nomb) ? Brushes.Gold : (nomb == miNombre ? Brushes.LightSkyBlue : Brushes.White);
+
                 g.DrawString(nomb, fFila, bNombre, panel.X + 20, y);
                 g.DrawString(aciertos.ToString(), fFila, Brushes.LimeGreen, panel.X + 250, y);
                 g.DrawString(errores.ToString(), fFila, Brushes.OrangeRed, panel.X + 390, y);
-                g.DrawString((aciertos * 100).ToString(), fFila, Brushes.Yellow, panel.X + 500, y);
+                g.DrawString(puntos.ToString(), fFila, Brushes.Yellow, panel.X + 500, y);
             }
 
             Font fSalir = new Font("Arial", 16, FontStyle.Italic);
@@ -403,21 +390,4 @@ namespace _100mexicanosDijeron
 
         protected override void OnResize(EventArgs e) { base.OnResize(e); Invalidate(); }
     }
-
-
-
-}
-
-
-
-public class PreguntaDTO
-{
-    public string id { get; set; }
-    public string tipo { get; set; }
-    public string pregunta { get; set; }
-    public string opcion_a { get; set; }
-    public string opcion_b { get; set; }
-    public string opcion_c { get; set; }
-    public string opcion_d { get; set; }
-    public string correcta { get; set; }
 }

@@ -9,7 +9,6 @@ using System.Windows.Forms;
 
 namespace _100mexicanosDijeron
 {
-
     public partial class FormConexion : Form
     {
         const int PUERTO = 54321;
@@ -37,11 +36,12 @@ namespace _100mexicanosDijeron
             InitializeComponent();
             this.DoubleBuffered = true;
             this.WindowState = FormWindowState.Maximized;
+
             this.KeyPress += OnKeyPress;
             this.MouseClick += OnMouseClick;
+
             timerCursor.Tick += (s, e) => { mostrarCursor = !mostrarCursor; Invalidate(); };
             timerCursor.Start();
-
         }
 
         private void OnKeyPress(object sender, KeyPressEventArgs e)
@@ -77,20 +77,17 @@ namespace _100mexicanosDijeron
             int cx = ClientSize.Width / 2;
             int cy = ClientSize.Height / 2;
 
-            if (!conectado) DibujarPantallaConexion(g, cx, cy);
-            else DibujarLobby(g, cx, cy);
+            if (!conectado)
+                DibujarPantallaConexion(g, cx, cy);
+            else
+                DibujarLobby(g, cx, cy);
         }
 
         void DibujarPantallaConexion(Graphics g, int cx, int cy)
         {
-            Font fTitulo = new Font("Showcard Gothic", 28, FontStyle.Bold);
             Font fLabel = new Font("Showcard Gothic", 14);
             Font fTexto = new Font("Arial", 20, FontStyle.Bold);
             Font fHint = new Font("Arial", 11, FontStyle.Italic);
-
-            //string titulo = "CONECTAR AL SERVIDOR";
-            //SizeF tamTit = g.MeasureString(titulo, fTitulo);
-            //g.DrawString(titulo, fTitulo, Brushes.White, cx - tamTit.Width / 2, cy - 200);
 
             rectCajaNombre = new Rectangle(cx - 220, cy - 110, 440, 55);
             DibujarCampo(g, rectCajaNombre, "TU NOMBRE:", nombre, escribiendoNombre, fLabel, fTexto);
@@ -104,6 +101,7 @@ namespace _100mexicanosDijeron
             rectBotonConectar = new Rectangle(cx - 120, cy + 80, 240, 60);
             g.FillRectangle(Brushes.MediumSlateBlue, rectBotonConectar);
             g.DrawRectangle(new Pen(Color.White, 3), rectBotonConectar);
+
             Font fBtn = new Font("Showcard Gothic", 18);
             SizeF tamBtn = g.MeasureString("CONECTAR", fBtn);
             g.DrawString("CONECTAR", fBtn, Brushes.White,
@@ -119,8 +117,10 @@ namespace _100mexicanosDijeron
             Color colorBorde = activo ? Color.Gold : Color.MediumSlateBlue;
             using (SolidBrush bg = new SolidBrush(Color.FromArgb(220, 255, 255, 255)))
                 g.FillRectangle(bg, rect);
+
             g.DrawRectangle(new Pen(colorBorde, activo ? 4 : 2), rect);
             g.DrawString(label, fLabel, activo ? Brushes.Gold : Brushes.White, rect.X, rect.Y - 28);
+
             string mostrar = valor + (activo && mostrarCursor ? "|" : "");
             g.DrawString(mostrar, fTexto, Brushes.Black, rect.X + 12, rect.Y + 10);
         }
@@ -134,6 +134,7 @@ namespace _100mexicanosDijeron
             Rectangle panel = new Rectangle(cx - 280, cy - 200, 560, 400);
             using (SolidBrush bg = new SolidBrush(Color.FromArgb(210, 10, 10, 40)))
                 g.FillRectangle(bg, panel);
+
             g.DrawRectangle(new Pen(Color.MediumSlateBlue, 3), panel);
 
             g.DrawString("SALA DE ESPERA", fTitulo, Brushes.Gold, panel.X + 60, panel.Y + 20);
@@ -150,6 +151,7 @@ namespace _100mexicanosDijeron
         private void OnMouseClick(object sender, MouseEventArgs e)
         {
             if (conectado) return;
+
             if (rectCajaNombre.Contains(e.Location)) { escribiendoNombre = true; Invalidate(); }
             else if (rectCajaIP.Contains(e.Location)) { escribiendoNombre = false; Invalidate(); }
             else if (rectBotonConectar.Contains(e.Location)) Conectar();
@@ -159,6 +161,7 @@ namespace _100mexicanosDijeron
         {
             if (string.IsNullOrWhiteSpace(nombre))
             { MessageBox.Show("Escribe tu nombre.", "Falta nombre", MessageBoxButtons.OK, MessageBoxIcon.Warning); return; }
+
             if (string.IsNullOrWhiteSpace(ipServidor))
             { MessageBox.Show("Escribe la IP.", "Falta IP", MessageBoxButtons.OK, MessageBoxIcon.Warning); return; }
 
@@ -183,24 +186,6 @@ namespace _100mexicanosDijeron
             }
         }
 
-        /*void EscucharServidor()
-        {
-            var sb = new StringBuilder();
-            byte[] buffer = new byte[1];
-            try
-            {
-                while (tcpCliente.Connected)
-                {
-                    int n = stream.Read(buffer, 0, 1);
-                    if (n == 0) break;
-                    char c = (char)buffer[0];
-                    if (c == '\n') { ProcesarMensaje(sb.ToString()); sb.Clear(); }
-                    else sb.Append(c);
-                }
-            }
-            catch { }
-        }*/
-
         void EscucharServidor()
         {
             var sb = new StringBuilder();
@@ -222,48 +207,43 @@ namespace _100mexicanosDijeron
         void ProcesarMensaje(string linea)
         {
             if (string.IsNullOrWhiteSpace(linea)) return;
+
             try
             {
-            var msg = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(linea);
-            string tipo = msg["tipo"].GetString();
+                var msg = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(linea);
+                string tipo = msg["tipo"].GetString();
 
-            switch (tipo)
-            {
-                case "bienvenida":
-                case "jugador_unido":
-                    ActualizarLobby(msg);
-                    break;
-                case "inicio_juego":
-                    escuchando = false; // Detenemos la escucha en este formulario
-                    this.Invoke((Action)(() =>
-                    {
-                        timerCursor.Stop();
-                        // Pasamos el stream y el nombre al nuevo formulario que ya tiene la lógica de la API
-                        FormJuegoRed juego = new FormJuegoRed(stream, nombre.Trim());
-                        juego.Show();
-                        this.Hide();
-                    }));
-                    break;
-                /*
-            case "inicio_juego":
-                this.Invoke((Action)(() =>
+                switch (tipo)
                 {
-                    timerCursor.Stop();
-                    new FormJuegoRed(stream, nombre.Trim()).Show();
-                    this.Hide();
-                }));
-                break;
-                */
-                case "error":
-                    string err = msg["mensaje"].GetString();
-                    this.Invoke((Action)(() =>
-                        MessageBox.Show(err, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)));
-                    break;
-            }
+                    case "bienvenida":
+                    case "jugador_unido":
+                        ActualizarLobby(msg);
+                        break;
+
+                    case "inicio_juego":
+                        escuchando = false;
+                        Thread.Sleep(50); // soltamos el hilo para no chocar con el nuevo form
+
+                        this.Invoke((Action)(() =>
+                        {
+                            timerCursor.Stop();
+                            // aqui es donde mandamos la IP para que el juego sepa a donde conectarse
+                            FormJuegoRed juego = new FormJuegoRed(stream, nombre.Trim(), ipServidor.Trim());
+                            juego.Show();
+                            this.Hide();
+                        }));
+                        break;
+
+                    case "error":
+                        string err = msg["mensaje"].GetString();
+                        this.Invoke((Action)(() =>
+                            MessageBox.Show(err, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)));
+                        break;
+                }
             }
             catch (JsonException)
             {
-                // Si llega algo que no es JSON, simplemente lo ignoramos para que no truene
+                // ignoramos si no es json valido
             }
         }
 
@@ -275,6 +255,7 @@ namespace _100mexicanosDijeron
                 foreach (var j in msg["jugadores"].EnumerateArray())
                     jugadoresConectados.Add(j.GetProperty("nombre").GetString() + " (" + j.GetProperty("ip").GetString() + ")");
             }
+
             if (msg.ContainsKey("esperando"))
                 esperando = msg["esperando"].GetInt32();
 
