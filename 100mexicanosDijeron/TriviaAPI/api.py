@@ -81,14 +81,17 @@ def guardar_resultados():
         
         sql = """INSERT INTO resultados_usuarios 
                  (nombre, categoria_id, preguntas_correctas, preguntas_incorrectas, puntuacion, fecha_partida) 
-                 VALUES (%s, NULL, %s, %s, %s, NOW())"""
+                 VALUES (%s, %s, %s, %s, %s, NOW())"""
                  
         for st in estadisticas:
             puntos = st['aciertos'] * 100
-            cursor.execute(sql, (st['nombre'], st['aciertos'], st['errores'], puntos))
+            cat_id = st.get('categoria_id')
+            if cat_id == 0: 
+                cat_id = None
+                
+            cursor.execute(sql, (st['nombre'], cat_id, st['aciertos'], st['errores'], puntos))
             
         conexion.commit()
-        
         cursor.close()
         conexion.close()
         return jsonify({"status": "ok"})
